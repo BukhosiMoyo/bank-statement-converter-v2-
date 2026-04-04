@@ -59,7 +59,6 @@ ADMIN_EMAILS=you@example.com
 EFT_ACCOUNT_NAME=Your Business Name
 EFT_BANK_NAME=Your Bank
 EFT_ACCOUNT_NUMBER=Your Account Number
-EFT_BRANCH_CODE=Your Branch Code
 ```
 
 ### Optional environment variables

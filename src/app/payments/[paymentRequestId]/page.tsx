@@ -165,7 +165,6 @@ export default async function PaymentRequestPage({
                     ["Account name", eftAccount.accountName],
                     ["Bank", eftAccount.bankName],
                     ["Account number", eftAccount.accountNumber],
-                    ["Branch code", eftAccount.branchCode],
                     ["Amount", paymentRequest.amountDisplay],
                     ["Reference", paymentRequest.paymentReference],
                   ].map(([label, value]) => (

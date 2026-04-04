@@ -16,7 +16,6 @@ type EftDetails = {
   accountName: string;
   accountNumber: string;
   bankName: string;
-  branchCode: string;
 };
 
 export const EMAIL_TEMPLATE_CATALOG = [
@@ -200,7 +199,6 @@ export function buildPaymentRequestCreatedEmail(
         { label: "Account name", value: input.eftDetails.accountName },
         { label: "Bank", value: input.eftDetails.bankName },
         { label: "Account number", value: input.eftDetails.accountNumber },
-        { label: "Branch code", value: input.eftDetails.branchCode },
       ]
     : [];
 

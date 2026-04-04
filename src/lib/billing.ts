@@ -72,7 +72,6 @@ export function getEftAccountDetails() {
     accountName: process.env.EFT_ACCOUNT_NAME ?? "Bank Statement Converter",
     bankName: process.env.EFT_BANK_NAME ?? "Your Bank",
     accountNumber: process.env.EFT_ACCOUNT_NUMBER ?? "0000000000",
-    branchCode: process.env.EFT_BRANCH_CODE ?? "000000",
   };
 }
 
