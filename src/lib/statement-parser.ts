@@ -73,18 +73,39 @@ async function ensureNodePdfPolyfills() {
 
   if (!nodePdfPolyfillsPromise) {
     nodePdfPolyfillsPromise = (async () => {
-      const canvas = await import("@napi-rs/canvas");
+      let canvas:
+        | {
+            DOMMatrix?: unknown;
+            ImageData?: unknown;
+            Path2D?: unknown;
+          }
+        | null = null;
       const runtimeGlobals = globalThis as unknown as Record<string, unknown>;
 
-      if (!globalThis.DOMMatrix && canvas.DOMMatrix) {
+      try {
+        const createRequire =
+          typeof process.getBuiltinModule === "function"
+            ? process
+                .getBuiltinModule("module")
+                ?.createRequire?.(import.meta.url)
+            : null;
+
+        if (createRequire) {
+          canvas = createRequire("@napi-rs/canvas");
+        }
+      } catch {
+        canvas = null;
+      }
+
+      if (!globalThis.DOMMatrix && canvas?.DOMMatrix) {
         runtimeGlobals["DOMMatrix"] = canvas.DOMMatrix;
       }
 
-      if (!globalThis.ImageData && canvas.ImageData) {
+      if (!globalThis.ImageData && canvas?.ImageData) {
         runtimeGlobals["ImageData"] = canvas.ImageData;
       }
 
-      if (!globalThis.Path2D && canvas.Path2D) {
+      if (!globalThis.Path2D && canvas?.Path2D) {
         runtimeGlobals["Path2D"] = canvas.Path2D;
       }
 
