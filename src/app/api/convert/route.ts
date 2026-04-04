@@ -31,6 +31,23 @@ function errorResponse(
   );
 }
 
+function buildUnknownParserErrorMessage(error: unknown) {
+  if (!(error instanceof Error)) {
+    return "This PDF layout could not be parsed yet.";
+  }
+
+  const name = error.name?.trim();
+  const message = error.message?.trim();
+  const diagnostic = [name, message]
+    .filter((part) => part && part !== "Error")
+    .join(": ")
+    .slice(0, 240);
+
+  return diagnostic
+    ? `This PDF layout could not be parsed yet. ${diagnostic}`
+    : "This PDF layout could not be parsed yet.";
+}
+
 export async function POST(request: Request) {
   const currentUser = await getCurrentUser();
   const formData = await request.formData();
@@ -156,13 +173,8 @@ export async function POST(request: Request) {
 
     console.error("Statement conversion failed.", error);
 
-    const detail =
-      error instanceof Error && process.env.NODE_ENV !== "production"
-        ? ` ${error.message}`
-        : "";
-
     return errorResponse(
-      `This PDF layout could not be parsed yet.${detail}`,
+      buildUnknownParserErrorMessage(error),
       422,
       [
         "Digital, text-based PDFs work best.",
