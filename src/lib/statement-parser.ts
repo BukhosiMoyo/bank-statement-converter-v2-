@@ -11,6 +11,31 @@ import {
 } from "@/lib/bank-parsers/shared";
 import type { StatementContext } from "@/lib/bank-parsers/types";
 
+export type StatementParseErrorCode =
+  | "password_protected"
+  | "invalid_pdf"
+  | "malformed_pdf"
+  | "unreadable_pdf";
+
+export class StatementParseError extends Error {
+  code: StatementParseErrorCode;
+  guidance: string[];
+  status: number;
+
+  constructor(
+    code: StatementParseErrorCode,
+    message: string,
+    guidance: string[],
+    status = 422,
+  ) {
+    super(message);
+    this.name = "StatementParseError";
+    this.code = code;
+    this.guidance = guidance;
+    this.status = status;
+  }
+}
+
 let pdfJsModulePromise: Promise<
   typeof import("pdfjs-dist/legacy/build/pdf.mjs")
 > | null = null;
@@ -28,6 +53,62 @@ async function loadPdfJs() {
 
 export function getGuestPageLimit() {
   return GUEST_PAGE_LIMIT;
+}
+
+function normalizeStatementParseError(error: unknown) {
+  if (error instanceof StatementParseError) {
+    return error;
+  }
+
+  if (!(error instanceof Error)) {
+    return null;
+  }
+
+  const pdfError = error as Error & {
+    code?: number;
+    details?: string;
+  };
+
+  switch (pdfError.name) {
+    case "PasswordException":
+      return new StatementParseError(
+        "password_protected",
+        "This PDF is password-protected.",
+        [
+          "Remove the password from the PDF and upload it again.",
+          "Digital, text-based PDFs work best right now.",
+        ],
+      );
+    case "InvalidPDFException":
+      return new StatementParseError(
+        "invalid_pdf",
+        "This file could not be read as a valid PDF.",
+        [
+          "Export the statement again as a PDF and retry.",
+          "Digital, text-based PDFs work best right now.",
+        ],
+      );
+    case "FormatError":
+      return new StatementParseError(
+        "malformed_pdf",
+        "This PDF appears to be malformed.",
+        [
+          "Export the statement again from the bank and retry.",
+          "Digital, text-based PDFs work best right now.",
+        ],
+      );
+    case "UnknownErrorException":
+      return new StatementParseError(
+        "unreadable_pdf",
+        "This PDF could not be read reliably.",
+        [
+          "Try exporting the statement again from the bank.",
+          "Scanned and image-only PDFs are not fully supported yet.",
+        ],
+      );
+    default:
+      return null;
+  }
 }
 
 function createLayoutSignature(
@@ -68,76 +149,99 @@ export async function parseStatementPreview({
     isEvalSupported: false,
     useWorkerFetch: false,
   });
-  const pdf = await task.promise;
-  const pages: StatementContext["pages"] = [];
-  let documentYear: number | null = null;
+  let pdf: Awaited<typeof task.promise> | null = null;
 
-  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-    const page = await pdf.getPage(pageNumber);
-    const content = await page.getTextContent();
-    const rows = buildTextRows(content.items);
-    const lines = rows.map((row) => row.text);
+  try {
+    pdf = await task.promise;
+    const pages: StatementContext["pages"] = [];
+    let documentYear: number | null = null;
 
-    documentYear ??= findDocumentYear(lines);
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+      const page = await pdf.getPage(pageNumber);
+      const content = await page.getTextContent();
+      const rows = buildTextRows(content.items);
+      const lines = rows.map((row) => row.text);
 
-    pages.push({
-      pageNumber,
-      lines,
-      rows,
-      text: lines.join("\n"),
+      documentYear ??= findDocumentYear(lines);
+
+      pages.push({
+        pageNumber,
+        lines,
+        rows,
+        text: lines.join("\n"),
+      });
+    }
+
+    const textLineCount = pages.reduce(
+      (total, page) => total + page.lines.length,
+      0,
+    );
+    const sourceDocumentKind =
+      textLineCount <= Math.max(4, pdf.numPages * 2) ? "likely_scanned" : "digital";
+
+    const layoutSignature = createLayoutSignature({
+      fileName,
+      pageCount: pdf.numPages,
+      pages,
     });
+    const learningProfile = await getParserLearningProfile(layoutSignature);
+
+    const context: StatementContext = {
+      fileName,
+      pageCount: pdf.numPages,
+      layoutSignature,
+      learningProfile,
+      pages,
+      documentYear,
+    };
+
+    const parser = selectBankParser(context);
+    const rows = parser.parse(context);
+    const { start, end } = summarizeDates(rows);
+    const reviewRecommended =
+      rows.length === 0 ||
+      rows.filter((row) => row.confidence === "low").length / rows.length >= 0.15 ||
+      (learningProfile !== null &&
+        learningProfile.feedbackCount > 0 &&
+        learningProfile.trustScore < 0.6);
+
+    const preview: StatementPreview = {
+      fileName,
+      pageCount: pdf.numPages,
+      rowCount: rows.length,
+      detectedBank: learningProfile?.bankName ?? parser.label,
+      detectedCurrency: parser.detectCurrency?.(context) ?? "ZAR",
+      parserId: parser.id,
+      layoutSignature,
+      sourceDocumentKind,
+      layoutSupport:
+        parser.id === "fnb" ||
+        parser.id === "standard-bank" ||
+        parser.id === "capitec"
+          ? "strong"
+          : "best_effort",
+      reviewRecommended,
+      statementStartDate: start,
+      statementEndDate: end,
+      rows,
+    };
+
+    return preview;
+  } catch (error) {
+    const normalizedError = normalizeStatementParseError(error);
+
+    if (normalizedError) {
+      throw normalizedError;
+    }
+
+    throw error;
+  } finally {
+    if (pdf) {
+      try {
+        await pdf.destroy();
+      } catch {
+        // Ignore cleanup failures so the original parse error is preserved.
+      }
+    }
   }
-
-  await pdf.destroy();
-
-  const textLineCount = pages.reduce((total, page) => total + page.lines.length, 0);
-  const sourceDocumentKind =
-    textLineCount <= Math.max(4, pdf.numPages * 2) ? "likely_scanned" : "digital";
-
-  const layoutSignature = createLayoutSignature({
-    fileName,
-    pageCount: pdf.numPages,
-    pages,
-  });
-  const learningProfile = await getParserLearningProfile(layoutSignature);
-
-  const context: StatementContext = {
-    fileName,
-    pageCount: pdf.numPages,
-    layoutSignature,
-    learningProfile,
-    pages,
-    documentYear,
-  };
-
-  const parser = selectBankParser(context);
-  const rows = parser.parse(context);
-  const { start, end } = summarizeDates(rows);
-  const reviewRecommended =
-    rows.length === 0 ||
-    rows.filter((row) => row.confidence === "low").length / rows.length >= 0.15 ||
-    (learningProfile !== null &&
-      learningProfile.feedbackCount > 0 &&
-      learningProfile.trustScore < 0.6);
-
-  const preview: StatementPreview = {
-    fileName,
-    pageCount: pdf.numPages,
-    rowCount: rows.length,
-    detectedBank: learningProfile?.bankName ?? parser.label,
-    detectedCurrency: parser.detectCurrency?.(context) ?? "ZAR",
-    parserId: parser.id,
-    layoutSignature,
-    sourceDocumentKind,
-    layoutSupport:
-      parser.id === "fnb" || parser.id === "standard-bank" || parser.id === "capitec"
-        ? "strong"
-        : "best_effort",
-    reviewRecommended,
-    statementStartDate: start,
-    statementEndDate: end,
-    rows,
-  };
-
-  return preview;
 }

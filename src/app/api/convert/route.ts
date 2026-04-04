@@ -8,7 +8,11 @@ import {
 } from "@/lib/app-data";
 import { isAdminEmail } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/auth";
-import { getGuestPageLimit, parseStatementPreview } from "@/lib/statement-parser";
+import {
+  getGuestPageLimit,
+  parseStatementPreview,
+  StatementParseError,
+} from "@/lib/statement-parser";
 
 function shouldEnforceAnonymousLimit(isAuthenticated: boolean) {
   return process.env.NODE_ENV === "production" && !isAuthenticated;
@@ -145,6 +149,12 @@ export async function POST(request: Request) {
         "Change plan or buy credits to keep processing statements this month.",
       ]);
     }
+
+    if (error instanceof StatementParseError) {
+      return errorResponse(error.message, error.status, error.guidance);
+    }
+
+    console.error("Statement conversion failed.", error);
 
     const detail =
       error instanceof Error && process.env.NODE_ENV !== "production"
