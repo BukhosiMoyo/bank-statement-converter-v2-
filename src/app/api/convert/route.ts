@@ -10,8 +10,8 @@ import { isAdminEmail } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/auth";
 import {
   getGuestPageLimit,
+  isStatementParseError,
   parseStatementPreview,
-  StatementParseError,
 } from "@/lib/statement-parser";
 
 function shouldEnforceAnonymousLimit(isAuthenticated: boolean) {
@@ -150,7 +150,7 @@ export async function POST(request: Request) {
       ]);
     }
 
-    if (error instanceof StatementParseError) {
+    if (isStatementParseError(error)) {
       return errorResponse(error.message, error.status, error.guidance);
     }
 

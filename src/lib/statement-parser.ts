@@ -36,6 +36,28 @@ export class StatementParseError extends Error {
   }
 }
 
+export function isStatementParseError(
+  error: unknown,
+): error is StatementParseError {
+  if (error instanceof StatementParseError) {
+    return true;
+  }
+
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const candidate = error as Partial<StatementParseError> & { name?: unknown };
+
+  return (
+    candidate.name === "StatementParseError" &&
+    typeof candidate.message === "string" &&
+    typeof candidate.status === "number" &&
+    Array.isArray(candidate.guidance) &&
+    typeof candidate.code === "string"
+  );
+}
+
 let pdfJsModulePromise: Promise<
   typeof import("pdfjs-dist/legacy/build/pdf.mjs")
 > | null = null;
@@ -56,7 +78,7 @@ export function getGuestPageLimit() {
 }
 
 function normalizeStatementParseError(error: unknown) {
-  if (error instanceof StatementParseError) {
+  if (isStatementParseError(error)) {
     return error;
   }
 
