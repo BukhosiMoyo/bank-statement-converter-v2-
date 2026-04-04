@@ -69,6 +69,8 @@ Use these when the related features should be active in production:
 ```bash
 RESEND_API_KEY=re_...
 EMAIL_FROM="Bank Statement Converter <billing@your-domain.com>"
+EMAIL_FROM_ACCOUNTS="Your Brand <accounts@your-domain.com>"
+EMAIL_FROM_BILLING="Your Brand <billing@your-domain.com>"
 PAYMENT_PROOF_RETENTION_DAYS=30
 ```
 
@@ -76,7 +78,8 @@ PAYMENT_PROOF_RETENTION_DAYS=30
 
 - Use a managed Postgres database in production.
 - Do not set `PGSSL=disable` for a hosted database unless your provider explicitly requires it.
-- `RESEND_API_KEY` and `EMAIL_FROM` are required for transactional email delivery.
+- `RESEND_API_KEY` is required for transactional email delivery.
+- Use `EMAIL_FROM_ACCOUNTS` and `EMAIL_FROM_BILLING` if you want different sender identities for account emails and payment emails.
 - `SITE_URL` and `NEXT_PUBLIC_SITE_URL` should point to the final public domain.
 - `ADMIN_EMAILS` controls who gets platform admin access.
 

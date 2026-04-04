@@ -20,6 +20,7 @@ declare global {
 }
 
 type SendEmailInput = {
+  fromPurpose?: "accounts" | "billing" | "default";
   html: string;
   subject: string;
   text: string;
@@ -44,8 +45,24 @@ function getEmailFromAddress() {
   return "";
 }
 
-function isEmailSendingEnabled() {
-  return Boolean(getResendApiKey() && getEmailFromAddress());
+function getEmailFromAddressForPurpose(
+  purpose: NonNullable<SendEmailInput["fromPurpose"]> = "default",
+) {
+  if (purpose === "accounts") {
+    return process.env.EMAIL_FROM_ACCOUNTS?.trim() || getEmailFromAddress();
+  }
+
+  if (purpose === "billing") {
+    return process.env.EMAIL_FROM_BILLING?.trim() || getEmailFromAddress();
+  }
+
+  return getEmailFromAddress();
+}
+
+function isEmailSendingEnabled(
+  purpose: NonNullable<SendEmailInput["fromPurpose"]> = "default",
+) {
+  return Boolean(getResendApiKey() && getEmailFromAddressForPurpose(purpose));
 }
 
 function getResendClient() {
@@ -76,7 +93,7 @@ function warnEmailDisabled() {
   }
 
   console.warn(
-    "Transactional email is disabled. Configure RESEND_API_KEY and EMAIL_FROM to send emails.",
+    "Transactional email is disabled. Configure RESEND_API_KEY plus EMAIL_FROM or the category-specific sender envs to send emails.",
   );
   global.__bankStatementConverterEmailConfigWarningShown = true;
 }
@@ -90,18 +107,20 @@ export function logEmailError(action: string, error: unknown, context?: Record<s
 
 export async function sendEmail(input: SendEmailInput) {
   const recipients = normalizeRecipients(input.to);
+  const fromPurpose = input.fromPurpose ?? "default";
+  const fromAddress = getEmailFromAddressForPurpose(fromPurpose);
 
   if (recipients.length === 0) {
     return null;
   }
 
-  if (!isEmailSendingEnabled()) {
+  if (!isEmailSendingEnabled(fromPurpose)) {
     warnEmailDisabled();
     return null;
   }
 
   const { data, error } = await getResendClient().emails.send({
-    from: getEmailFromAddress(),
+    from: fromAddress,
     html: input.html,
     subject: input.subject,
     text: input.text,
@@ -141,6 +160,7 @@ export async function sendWelcomeEmail(input: {
 
   return sendEmail({
     ...email,
+    fromPurpose: "accounts",
     to: input.email,
   });
 }
@@ -160,6 +180,7 @@ export async function sendOrganizationInvitationEmail(input: {
 
   return sendEmail({
     ...email,
+    fromPurpose: "accounts",
     to: input.email,
   });
 }
@@ -175,6 +196,7 @@ export async function sendPaymentRequestCreatedEmail(paymentRequest: PaymentRequ
 
   return sendEmail({
     ...email,
+    fromPurpose: "billing",
     to: paymentRequest.requesterEmail,
   });
 }
@@ -187,6 +209,7 @@ export async function sendPaymentProofReceivedEmail(paymentRequest: PaymentReque
 
   return sendEmail({
     ...email,
+    fromPurpose: "billing",
     to: paymentRequest.requesterEmail,
   });
 }
@@ -211,6 +234,7 @@ export async function sendPaymentProofSubmittedAdminEmail(input: {
 
   return sendEmail({
     ...email,
+    fromPurpose: "billing",
     to: adminEmails,
   });
 }
@@ -224,6 +248,7 @@ export async function sendPaymentStatusEmail(paymentRequest: PaymentRequest) {
 
     return sendEmail({
       ...email,
+      fromPurpose: "billing",
       to: paymentRequest.requesterEmail,
     });
   }
@@ -241,6 +266,7 @@ export async function sendPaymentStatusEmail(paymentRequest: PaymentRequest) {
 
     return sendEmail({
       ...email,
+      fromPurpose: "billing",
       to: paymentRequest.requesterEmail,
     });
   }
@@ -254,6 +280,7 @@ export async function sendPaymentStatusEmail(paymentRequest: PaymentRequest) {
 
     return sendEmail({
       ...email,
+      fromPurpose: "billing",
       to: paymentRequest.requesterEmail,
     });
   }
