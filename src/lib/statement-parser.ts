@@ -63,6 +63,141 @@ let pdfJsModulePromise: Promise<
 > | null = null;
 let nodePdfPolyfillsPromise: Promise<void> | null = null;
 
+class PdfDomMatrixShim {
+  a = 1;
+  b = 0;
+  c = 0;
+  d = 1;
+  e = 0;
+  f = 0;
+
+  constructor(init?: string | number[]) {
+    if (Array.isArray(init) && init.length >= 6) {
+      [
+        this.a,
+        this.b,
+        this.c,
+        this.d,
+        this.e,
+        this.f,
+      ] = init.slice(0, 6).map((value) => Number(value) || 0);
+    }
+  }
+
+  multiplySelf(other: {
+    a: number;
+    b: number;
+    c: number;
+    d: number;
+    e: number;
+    f: number;
+  }) {
+    const nextA = this.a * other.a + this.c * other.b;
+    const nextB = this.b * other.a + this.d * other.b;
+    const nextC = this.a * other.c + this.c * other.d;
+    const nextD = this.b * other.c + this.d * other.d;
+    const nextE = this.a * other.e + this.c * other.f + this.e;
+    const nextF = this.b * other.e + this.d * other.f + this.f;
+
+    this.a = nextA;
+    this.b = nextB;
+    this.c = nextC;
+    this.d = nextD;
+    this.e = nextE;
+    this.f = nextF;
+    return this;
+  }
+
+  preMultiplySelf(other: {
+    a: number;
+    b: number;
+    c: number;
+    d: number;
+    e: number;
+    f: number;
+  }) {
+    const nextA = other.a * this.a + other.c * this.b;
+    const nextB = other.b * this.a + other.d * this.b;
+    const nextC = other.a * this.c + other.c * this.d;
+    const nextD = other.b * this.c + other.d * this.d;
+    const nextE = other.a * this.e + other.c * this.f + other.e;
+    const nextF = other.b * this.e + other.d * this.f + other.f;
+
+    this.a = nextA;
+    this.b = nextB;
+    this.c = nextC;
+    this.d = nextD;
+    this.e = nextE;
+    this.f = nextF;
+    return this;
+  }
+
+  translateSelf(tx = 0, ty = 0) {
+    this.e += this.a * tx + this.c * ty;
+    this.f += this.b * tx + this.d * ty;
+    return this;
+  }
+
+  scaleSelf(scaleX = 1, scaleY = scaleX) {
+    this.a *= scaleX;
+    this.b *= scaleX;
+    this.c *= scaleY;
+    this.d *= scaleY;
+    return this;
+  }
+
+  invertSelf() {
+    const determinant = this.a * this.d - this.b * this.c;
+
+    if (!determinant) {
+      this.a = Number.NaN;
+      this.b = Number.NaN;
+      this.c = Number.NaN;
+      this.d = Number.NaN;
+      this.e = Number.NaN;
+      this.f = Number.NaN;
+      return this;
+    }
+
+    const nextA = this.d / determinant;
+    const nextB = -this.b / determinant;
+    const nextC = -this.c / determinant;
+    const nextD = this.a / determinant;
+    const nextE = (this.c * this.f - this.d * this.e) / determinant;
+    const nextF = (this.b * this.e - this.a * this.f) / determinant;
+
+    this.a = nextA;
+    this.b = nextB;
+    this.c = nextC;
+    this.d = nextD;
+    this.e = nextE;
+    this.f = nextF;
+    return this;
+  }
+
+  translate(tx = 0, ty = 0) {
+    return new PdfDomMatrixShim([
+      this.a,
+      this.b,
+      this.c,
+      this.d,
+      this.e,
+      this.f,
+    ]).translateSelf(tx, ty);
+  }
+
+  scale(scaleX = 1, scaleY = scaleX) {
+    return new PdfDomMatrixShim([
+      this.a,
+      this.b,
+      this.c,
+      this.d,
+      this.e,
+      this.f,
+    ]).scaleSelf(scaleX, scaleY);
+  }
+}
+
 async function ensureNodePdfPolyfills() {
   if (
     typeof process === "undefined" ||
@@ -99,6 +234,10 @@ async function ensureNodePdfPolyfills() {
 
       if (!globalThis.DOMMatrix && canvas?.DOMMatrix) {
         runtimeGlobals["DOMMatrix"] = canvas.DOMMatrix;
+      }
+
+      if (!globalThis.DOMMatrix) {
+        runtimeGlobals["DOMMatrix"] = PdfDomMatrixShim;
       }
 
       if (!globalThis.ImageData && canvas?.ImageData) {
