@@ -61,10 +61,53 @@ export function isStatementParseError(
 let pdfJsModulePromise: Promise<
   typeof import("pdfjs-dist/legacy/build/pdf.mjs")
 > | null = null;
+let nodePdfPolyfillsPromise: Promise<void> | null = null;
+
+async function ensureNodePdfPolyfills() {
+  if (
+    typeof process === "undefined" ||
+    Object.prototype.toString.call(process) !== "[object process]"
+  ) {
+    return;
+  }
+
+  if (!nodePdfPolyfillsPromise) {
+    nodePdfPolyfillsPromise = (async () => {
+      const canvas = await import("@napi-rs/canvas");
+      const runtimeGlobals = globalThis as unknown as Record<string, unknown>;
+
+      if (!globalThis.DOMMatrix && canvas.DOMMatrix) {
+        runtimeGlobals["DOMMatrix"] = canvas.DOMMatrix;
+      }
+
+      if (!globalThis.ImageData && canvas.ImageData) {
+        runtimeGlobals["ImageData"] = canvas.ImageData;
+      }
+
+      if (!globalThis.Path2D && canvas.Path2D) {
+        runtimeGlobals["Path2D"] = canvas.Path2D;
+      }
+
+      if (!globalThis.navigator?.language) {
+        Object.defineProperty(globalThis, "navigator", {
+          configurable: true,
+          value: {
+            language: "en-US",
+            platform: "",
+            userAgent: "",
+          },
+        });
+      }
+    })();
+  }
+
+  await nodePdfPolyfillsPromise;
+}
 
 async function loadPdfJs() {
   if (!pdfJsModulePromise) {
     pdfJsModulePromise = (async () => {
+      await ensureNodePdfPolyfills();
       await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
       return import("pdfjs-dist/legacy/build/pdf.mjs");
     })();
