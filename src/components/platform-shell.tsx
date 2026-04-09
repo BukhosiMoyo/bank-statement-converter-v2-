@@ -75,14 +75,14 @@ function NavIcon({
   kind: NavIconKind;
   active?: boolean;
 }) {
-  const color = active ? "text-white" : "text-[var(--muted)]";
+  const color = active ? "text-white" : "text-[var(--foreground)]";
 
   switch (kind) {
     case "overview":
       return (
         <svg
           aria-hidden="true"
-          className={`h-4 w-4 ${color}`}
+          className={`h-5 w-5 ${color}`}
           fill="none"
           viewBox="0 0 20 20"
         >
@@ -99,7 +99,7 @@ function NavIcon({
       return (
         <svg
           aria-hidden="true"
-          className={`h-4 w-4 ${color}`}
+          className={`h-5 w-5 ${color}`}
           fill="none"
           viewBox="0 0 20 20"
         >
@@ -124,7 +124,7 @@ function NavIcon({
       return (
         <svg
           aria-hidden="true"
-          className={`h-4 w-4 ${color}`}
+          className={`h-5 w-5 ${color}`}
           fill="none"
           viewBox="0 0 20 20"
         >
@@ -149,7 +149,7 @@ function NavIcon({
       return (
         <svg
           aria-hidden="true"
-          className={`h-4 w-4 ${color}`}
+          className={`h-5 w-5 ${color}`}
           fill="none"
           viewBox="0 0 20 20"
         >
@@ -166,7 +166,7 @@ function NavIcon({
       return (
         <svg
           aria-hidden="true"
-          className={`h-4 w-4 ${color}`}
+          className={`h-5 w-5 ${color}`}
           fill="none"
           viewBox="0 0 20 20"
         >
@@ -188,7 +188,7 @@ function NavIcon({
       return (
         <svg
           aria-hidden="true"
-          className={`h-4 w-4 ${color}`}
+          className={`h-5 w-5 ${color}`}
           fill="none"
           viewBox="0 0 20 20"
         >
@@ -210,7 +210,7 @@ function NavIcon({
       return (
         <svg
           aria-hidden="true"
-          className={`h-4 w-4 ${color}`}
+          className={`h-5 w-5 ${color}`}
           fill="none"
           viewBox="0 0 20 20"
         >
@@ -233,7 +233,7 @@ function NavIcon({
       return (
         <svg
           aria-hidden="true"
-          className={`h-4 w-4 ${color}`}
+          className={`h-5 w-5 ${color}`}
           fill="none"
           viewBox="0 0 20 20"
         >
@@ -270,24 +270,50 @@ function PlatformNavLink({
   return (
     <Link
       href={href}
-      className={`flex items-center rounded-[1.25rem] px-3 py-3 text-sm font-medium ${
+      className={`flex items-center rounded-[1.35rem] text-sm font-medium ${
         active
           ? "bg-[linear-gradient(135deg,#1b7a66,#0f5145)] text-white shadow-[0_18px_35px_rgba(21,104,87,0.24)]"
-          : "border border-black/6 bg-white/60 text-[var(--foreground)] hover:border-[var(--accent)]/20"
-      } ${collapsed ? "justify-center" : "gap-3"}`}
+          : "border border-black/8 bg-white/68 text-[var(--foreground)] hover:border-[var(--accent)]/20 hover:bg-white/82"
+      } ${collapsed ? "h-12 justify-center px-0" : "min-h-12 gap-3 px-4 py-3"}`}
       title={collapsed ? label : undefined}
     >
-      <span
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border ${
-          active
-            ? "border-white/15 bg-white/10"
-            : "border-black/6 bg-white/80"
-        }`}
-      >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center">
         <NavIcon active={active} kind={icon} />
       </span>
       {!collapsed ? <span>{label}</span> : null}
     </Link>
+  );
+}
+
+function FooterLinks({
+  showAdmin,
+}: {
+  showAdmin: boolean;
+}) {
+  const links = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/dashboard/settings", label: "Settings" },
+    { href: "/dashboard/billing", label: "Billing" },
+    ...(showAdmin
+      ? [
+          { href: "/dashboard/admin/users", label: "Users" },
+          { href: "/dashboard/admin/payments", label: "Payments" },
+        ]
+      : []),
+  ];
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {links.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          className="inline-flex min-h-9 items-center justify-center rounded-full border border-black/8 bg-white/72 px-3 text-xs font-medium text-[var(--foreground)] hover:border-[var(--accent)]/20"
+        >
+          {link.label}
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -553,46 +579,10 @@ export function PlatformShell({
         style={{ width: sidebarWidth }}
       >
         <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(22,106,91,0.16),transparent_72%)]" />
-        <div className="relative flex h-full flex-col">
+        <div className="relative flex h-full min-h-0 flex-col">
           <BrandMark collapsed={isSidebarCollapsed} />
 
-          <div
-            className={`mt-6 rounded-[1.8rem] border border-black/8 bg-white/68 p-4 ${
-              isSidebarCollapsed ? "px-3 py-4" : ""
-            }`}
-          >
-            {!isSidebarCollapsed ? (
-              <>
-                <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
-                  Workspace
-                </p>
-                <p className="mt-3 text-lg font-semibold tracking-tight text-[var(--foreground)]">
-                  {user.activeWorkspace.name}
-                </p>
-              </>
-            ) : null}
-            <div
-              className={`mt-4 flex items-center ${
-                isSidebarCollapsed ? "justify-center" : "gap-3"
-              }`}
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-semibold text-white">
-                {getInitials(user.name)}
-              </span>
-              {!isSidebarCollapsed ? (
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-[var(--foreground)]">
-                    {user.name}
-                  </p>
-                  <p className="truncate text-xs text-[var(--muted)]">
-                    {user.email}
-                  </p>
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-1 flex-col">
+          <div className="mt-6 flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
             <nav className="grid gap-2">
               <PlatformNavLink
                 active={currentView === "dashboard"}
@@ -660,7 +650,7 @@ export function PlatformShell({
             </nav>
 
             {!isSidebarCollapsed && sidebarFooter ? (
-              <div className="mt-auto pt-6">{sidebarFooter}</div>
+              <div className="mt-6">{sidebarFooter}</div>
             ) : null}
           </div>
         </div>
@@ -741,14 +731,7 @@ export function PlatformShell({
         }}
       >
         <div className="panel rounded-[1.6rem] px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
-            <p className="truncate text-xs font-medium text-[var(--foreground)]">
-              Bank Statement Converter
-            </p>
-            <p className="truncate text-xs text-[var(--muted)]">
-              {user.activeWorkspace.name}
-            </p>
-          </div>
+          <FooterLinks showAdmin={showAdmin} />
         </div>
       </div>
     </main>
