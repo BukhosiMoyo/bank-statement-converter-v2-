@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 import {
   createOrganizationInvitation,
-  getWorkspaceScope,
 } from "@/lib/app-data";
 import { getCurrentUser } from "@/lib/auth";
 import {
@@ -21,14 +20,24 @@ export async function POST(request: Request) {
     return buildRedirect(request, "/login?next=%2Fdashboard%2Fsettings");
   }
 
-  const workspace = getWorkspaceScope(currentUser);
   const formData = await request.formData();
   const requestedReturnTo = String(formData.get("returnTo") ?? "/dashboard/settings").trim();
   const returnTo = requestedReturnTo.startsWith("/")
     ? requestedReturnTo
     : "/dashboard/settings";
+  const requestedOrganizationId = String(formData.get("organizationId") ?? "").trim();
+  const selectedOrganization = requestedOrganizationId
+    ? currentUser.organizations.find(
+        (organization) => organization.id === requestedOrganizationId,
+      ) ?? null
+    : currentUser.activeWorkspace.type === "organization"
+      ? {
+          id: currentUser.activeWorkspace.organizationId,
+          name: currentUser.activeWorkspace.name,
+        }
+      : null;
 
-  if (workspace.type !== "organization") {
+  if (!selectedOrganization) {
     return buildRedirect(
       request,
       `${returnTo}?error=` + encodeURIComponent("Organization not found."),
@@ -41,23 +50,20 @@ export async function POST(request: Request) {
   try {
     await createOrganizationInvitation({
       actorUserId: currentUser.id,
-      organizationId: workspace.organizationId,
+      organizationId: selectedOrganization.id,
       email,
       role: role === "admin" ? "admin" : "member",
     });
     await sendOrganizationInvitationEmail({
       email,
       inviterName: currentUser.name,
-      organizationName:
-        currentUser.activeWorkspace.type === "organization"
-          ? currentUser.activeWorkspace.name
-          : "Organization",
+      organizationName: selectedOrganization.name,
       role: role === "admin" ? "admin" : "member",
     }).catch((error) => {
       logEmailError("organization invitation", error, {
         actorUserId: currentUser.id,
         email,
-        organizationId: workspace.organizationId,
+        organizationId: selectedOrganization.id,
       });
     });
   } catch (error) {

@@ -4,6 +4,7 @@ import { PlatformShell } from "@/components/platform-shell";
 import { isAdminEmail } from "@/lib/admin";
 import {
   getAdminOverview,
+  getUserActivitySummary,
   listAdminNotifications,
   listAdminUsers,
   listPendingOrganizationInvitesForUser,
@@ -336,8 +337,9 @@ async function AdminDashboard({
 }: {
   user: SessionUser;
 }) {
-  const [overview, paymentQueue, notifications, users] = await Promise.all([
+  const [overview, selfActivity, paymentQueue, notifications, users] = await Promise.all([
     getAdminOverview(),
+    getUserActivitySummary(user.id),
     listPaymentRequestsForAdmin({
       status: "pending",
       limit: 6,
@@ -392,6 +394,25 @@ async function AdminDashboard({
           note="Approved today"
           value={formatMoneyMinor(overview.approvedRevenueTodayMinor)}
         />
+      </section>
+
+      <section className="panel rounded-[2rem] p-6">
+        <SectionTitle eyebrow="Your account" title="Usage" />
+
+        <div className="mt-6 grid gap-4 xl:grid-cols-3">
+          <DashboardMetricCard
+            label="Statements"
+            value={formatCompactNumber(selfActivity.totalConversions)}
+          />
+          <DashboardMetricCard
+            label="Rows"
+            value={formatCompactNumber(selfActivity.totalTransactionRows)}
+          />
+          <DashboardMetricCard
+            label="Credits"
+            value={formatCompactNumber(selfActivity.creditsRemaining)}
+          />
+        </div>
       </section>
 
       <section className="panel rounded-[2rem] p-6">

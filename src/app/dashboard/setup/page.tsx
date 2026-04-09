@@ -7,6 +7,7 @@ import {
   canManageOrganization,
   canRenameOrganization,
   getOrganizationMembers,
+  isOrganizationTeamAccessEnabled,
   getWorkspacePlanSummary,
   getWorkspaceScope,
   listOrganizationInvitations,
@@ -53,9 +54,12 @@ export default async function DashboardSetupPage({
   const workspace = getWorkspaceScope(user);
   const planSummary = await getWorkspacePlanSummary(workspace);
   const projects = await listWorkspaceProjects(user.id, workspace, 100);
-  const teamPlanEnabled = supportsTeamWorkspace(planSummary.planId);
   const canManageTeam = canManageOrganization(workspace);
   const canRenameTeam = canRenameOrganization(workspace);
+  const teamPlanEnabled =
+    workspace.type === "organization"
+      ? await isOrganizationTeamAccessEnabled(workspace.organizationId)
+      : supportsTeamWorkspace(planSummary.planId);
   const organizationMembers =
     workspace.type === "organization"
       ? await getOrganizationMembers(user.id, workspace.organizationId)

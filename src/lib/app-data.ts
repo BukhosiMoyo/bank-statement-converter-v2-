@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { BillingCycle, CreditBundleId } from "@/lib/billing";
+import { isConfiguredAdminEmail } from "@/lib/admin-config";
 import {
   formatZarAmount,
   getCreditBundleDefinition,
@@ -167,6 +168,8 @@ export type AdminUserDirectoryEntry = {
   createdAt: string;
   planId: PlanId;
   planName: string;
+  totalConversions: number;
+  personalCreditsRemaining: number;
   organizationCount: number;
   organizations: string[];
 };
@@ -192,6 +195,12 @@ export type ReferralSummary = {
   referralCode: string;
   successfulReferrals: number;
   creditsEarned: number;
+};
+
+export type UserActivitySummary = {
+  totalConversions: number;
+  totalTransactionRows: number;
+  creditsRemaining: number;
 };
 
 export type UserUsageSummary = {
@@ -2236,6 +2245,43 @@ export function getWorkspaceScope(user: SessionUser): WorkspaceScope {
   };
 }
 
+export async function getUserActivitySummary(userId: string) {
+  await ensureAppTables();
+  const pool = getDatabasePool();
+  const [conversionStats, credits] = await Promise.all([
+    pool.query<{
+      total_conversions: number | null;
+      total_transaction_rows: number | null;
+    }>(
+      `
+        SELECT
+          COUNT(*)::int AS total_conversions,
+          COALESCE(SUM(row_count), 0)::int AS total_transaction_rows
+        FROM user_conversions
+        WHERE user_id = $1
+      `,
+      [userId],
+    ),
+    readWorkspaceCreditBalance(
+      {
+        type: "personal",
+        userId,
+      },
+      pool,
+    ),
+  ]);
+
+  return {
+    totalConversions: normalizeNumber(
+      conversionStats.rows[0]?.total_conversions,
+    ),
+    totalTransactionRows: normalizeNumber(
+      conversionStats.rows[0]?.total_transaction_rows,
+    ),
+    creditsRemaining: credits.creditsRemaining,
+  } satisfies UserActivitySummary;
+}
+
 export function canManageOrganization(workspace: WorkspaceScope) {
   return workspace.type === "organization" &&
     (workspace.role === "owner" || workspace.role === "admin");
@@ -2572,6 +2618,60 @@ export async function getOrganizationPlanSummary(organizationId: string) {
     userId: "",
   });
   return buildPlanSummary(subscription, usage, credits);
+}
+
+async function organizationHasAdminOwner(
+  organizationId: string,
+  client: Queryable = getDatabasePool(),
+) {
+  const result = await client.query<{ owner_email: string }>(
+    `
+      SELECT owner_user.email AS owner_email
+      FROM organizations organization
+      JOIN app_users owner_user
+        ON owner_user.id = organization.owner_user_id
+      WHERE organization.id = $1
+      LIMIT 1
+    `,
+    [organizationId],
+  );
+
+  if (result.rowCount === 0) {
+    return false;
+  }
+
+  return isConfiguredAdminEmail(result.rows[0].owner_email);
+}
+
+async function organizationHasTeamAccess(input: {
+  organizationId: string;
+  planId: string | null | undefined;
+  client?: Queryable;
+}) {
+  if (supportsTeamWorkspace(input.planId)) {
+    return true;
+  }
+
+  return organizationHasAdminOwner(
+    input.organizationId,
+    input.client ?? getDatabasePool(),
+  );
+}
+
+export async function isOrganizationTeamAccessEnabled(
+  organizationId: string,
+  client: Queryable = getDatabasePool(),
+) {
+  const { subscription } = await ensureCurrentOrganizationUsageRows(
+    organizationId,
+    client,
+  );
+
+  return organizationHasTeamAccess({
+    organizationId,
+    planId: subscription.plan_id,
+    client,
+  });
 }
 
 async function applyOrganizationPlanChange(
@@ -3971,24 +4071,56 @@ export async function listAdminUsers(limit = 100) {
     plan_id: string;
     organization_count: number | null;
     organization_names: string[] | null;
+    total_conversions: number | null;
+    total_credits: number | null;
+    credits_used: number | null;
   }>(
     `
+      WITH organization_agg AS (
+        SELECT
+          membership.user_id,
+          COUNT(DISTINCT membership.organization_id)::int AS organization_count,
+          ARRAY_REMOVE(ARRAY_AGG(DISTINCT organization.name), NULL) AS organization_names
+        FROM organization_memberships membership
+        LEFT JOIN organizations organization
+          ON organization.id = membership.organization_id
+        GROUP BY membership.user_id
+      ),
+      conversion_agg AS (
+        SELECT user_id, COUNT(*)::int AS total_conversions
+        FROM user_conversions
+        GROUP BY user_id
+      ),
+      credit_agg AS (
+        SELECT
+          workspace_user_id AS user_id,
+          COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0)::int AS total_credits,
+          COALESCE(SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END), 0)::int AS credits_used
+        FROM workspace_credit_transactions
+        WHERE workspace_type = 'personal'
+          AND workspace_user_id IS NOT NULL
+        GROUP BY workspace_user_id
+      )
       SELECT
         user_record.id AS user_id,
         user_record.name,
         user_record.email,
         user_record.created_at,
         COALESCE(subscription.plan_id, $2) AS plan_id,
-        COUNT(DISTINCT membership.organization_id)::int AS organization_count,
-        ARRAY_REMOVE(ARRAY_AGG(DISTINCT organization.name), NULL) AS organization_names
+        COALESCE(organization_agg.organization_count, 0)::int AS organization_count,
+        organization_agg.organization_names,
+        COALESCE(conversion_agg.total_conversions, 0)::int AS total_conversions,
+        COALESCE(credit_agg.total_credits, 0)::int AS total_credits,
+        COALESCE(credit_agg.credits_used, 0)::int AS credits_used
       FROM app_users user_record
       LEFT JOIN user_subscriptions subscription
         ON subscription.user_id = user_record.id
-      LEFT JOIN organization_memberships membership
-        ON membership.user_id = user_record.id
-      LEFT JOIN organizations organization
-        ON organization.id = membership.organization_id
-      GROUP BY user_record.id, subscription.plan_id
+      LEFT JOIN organization_agg
+        ON organization_agg.user_id = user_record.id
+      LEFT JOIN conversion_agg
+        ON conversion_agg.user_id = user_record.id
+      LEFT JOIN credit_agg
+        ON credit_agg.user_id = user_record.id
       ORDER BY user_record.created_at DESC, user_record.name ASC
       LIMIT $1
     `,
@@ -4005,6 +4137,11 @@ export async function listAdminUsers(limit = 100) {
       createdAt: normalizeIsoDate(row.created_at),
       planId,
       planName: getPlanDefinition(planId).name,
+      totalConversions: normalizeNumber(row.total_conversions),
+      personalCreditsRemaining: Math.max(
+        normalizeNumber(row.total_credits) - normalizeNumber(row.credits_used),
+        0,
+      ),
       organizationCount: normalizeNumber(row.organization_count),
       organizations: Array.isArray(row.organization_names)
         ? row.organization_names.filter(
@@ -4111,6 +4248,86 @@ export async function listAdminOrganizations(limit = 50) {
   }
 
   return [...organizations.values()];
+}
+
+export async function grantAdminCredits(input: {
+  targetUserId: string;
+  amount: number;
+  note?: string | null;
+}) {
+  await ensureAppTables();
+  const pool = getDatabasePool();
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const amount = Number(input.amount);
+
+    if (!Number.isInteger(amount) || amount <= 0) {
+      throw new Error("Enter a whole number of credits.");
+    }
+
+    const targetUser = await client.query<{
+      id: string;
+      name: string;
+      email: string;
+    }>(
+      `
+        SELECT id, name, email
+        FROM app_users
+        WHERE id = $1
+        LIMIT 1
+        FOR UPDATE
+      `,
+      [input.targetUserId],
+    );
+
+    if (targetUser.rowCount === 0) {
+      throw new Error("User not found.");
+    }
+
+    await lockWorkspaceCredits(
+      {
+        type: "personal",
+        userId: input.targetUserId,
+      },
+      client,
+    );
+
+    await addWorkspaceCredits({
+      workspace: {
+        type: "personal",
+        userId: input.targetUserId,
+      },
+      amount,
+      transactionType: "admin_grant",
+      note: input.note?.trim() || "Admin grant",
+      client,
+    });
+
+    const credits = await readWorkspaceCreditBalance(
+      {
+        type: "personal",
+        userId: input.targetUserId,
+      },
+      client,
+    );
+
+    await client.query("COMMIT");
+
+    return {
+      userId: targetUser.rows[0].id,
+      name: targetUser.rows[0].name,
+      email: targetUser.rows[0].email,
+      credits,
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function listUserOrganizations(userId: string) {
@@ -4337,7 +4554,13 @@ export async function createOrganizationInvitation(input: {
       true,
     );
 
-    if (!supportsTeamWorkspace(usageState.subscription.plan_id)) {
+    const teamAccessEnabled = await organizationHasTeamAccess({
+      organizationId: input.organizationId,
+      planId: usageState.subscription.plan_id,
+      client,
+    });
+
+    if (!teamAccessEnabled) {
       throw new Error(
         "Upgrade this workspace to Business to invite teammates.",
       );
@@ -4558,7 +4781,13 @@ export async function acceptOrganizationInvitation(input: {
       true,
     );
 
-    if (!supportsTeamWorkspace(usageState.subscription.plan_id)) {
+    const teamAccessEnabled = await organizationHasTeamAccess({
+      organizationId: invitation.organization_id,
+      planId: usageState.subscription.plan_id,
+      client,
+    });
+
+    if (!teamAccessEnabled) {
       throw new Error(
         "This workspace needs the Business plan before teammates can join.",
       );
@@ -5927,11 +6156,67 @@ async function getOrganizationConversionById(
   organizationId: string,
   conversionId: string,
 ) {
-  const result = await listOrganizationConversions(actorUserId, organizationId, {
-    limit: 1,
-  });
+  await ensureAppTables();
+  const role = await getOrganizationRoleForUser(organizationId, actorUserId);
 
-  return result.find((conversion) => conversion.id === conversionId) ?? null;
+  if (!role) {
+    throw new Error("Organization not found.");
+  }
+
+  const pool = getDatabasePool();
+  const result = await pool.query<{
+    id: string;
+    user_id: string;
+    organization_id: string;
+    file_name: string;
+    created_at: Date;
+    page_count: number;
+    row_count: number;
+    detected_bank: string | null;
+    detected_currency: string | null;
+    parser_id: string;
+    layout_signature: string;
+    review_recommended: boolean;
+    statement_start_date: string | null;
+    statement_end_date: string | null;
+    project_id: string | null;
+    project_name: string | null;
+    preview: StatementPreview;
+  }>(
+    `
+      SELECT
+        c.id,
+        c.user_id,
+        c.organization_id,
+        c.file_name,
+        c.created_at,
+        c.page_count,
+        c.row_count,
+        c.detected_bank,
+        c.detected_currency,
+        c.parser_id,
+        c.layout_signature,
+        c.review_recommended,
+        c.statement_start_date,
+        c.statement_end_date,
+        c.project_id,
+        p.project_name,
+        c.preview
+      FROM user_conversions c
+      LEFT JOIN user_projects p
+        ON p.id = c.project_id
+       AND p.organization_id = c.organization_id
+      WHERE c.organization_id = $1 AND c.id = $2
+      LIMIT 1
+    `,
+    [organizationId, conversionId],
+  );
+
+  if (result.rowCount === 0) {
+    return null;
+  }
+
+  return mapStoredConversion(result.rows[0]);
 }
 
 async function assignOrganizationConversionToProject(

@@ -7,6 +7,7 @@ import {
   canRenameOrganization,
   getAdminOverview,
   getOrganizationMembers,
+  isOrganizationTeamAccessEnabled,
   getWorkspacePlanSummary,
   getWorkspaceScope,
   listOrganizationInvitations,
@@ -15,7 +16,6 @@ import {
 } from "@/lib/app-data";
 import { requireCurrentUser } from "@/lib/auth";
 import { CURRENCY_OPTIONS } from "@/lib/currencies";
-import { supportsTeamWorkspace } from "@/lib/plans";
 
 import {
   AdminSidebarCard,
@@ -66,6 +66,7 @@ export default async function DashboardSettingsPage({
     organizationInvitations,
     pendingInvites,
     adminOverview,
+    teamWorkspaceEnabled,
   ] = await Promise.all([
     getWorkspacePlanSummary(workspace),
     listWorkspaceProjects(user.id, workspace, 100),
@@ -82,11 +83,10 @@ export default async function DashboardSettingsPage({
         })
       : Promise.resolve([]),
     showAdmin ? getAdminOverview() : Promise.resolve(null),
+    workspace.type === "organization"
+      ? isOrganizationTeamAccessEnabled(workspace.organizationId)
+      : Promise.resolve(false),
   ]);
-
-  const teamWorkspaceEnabled =
-    workspace.type === "organization" &&
-    supportsTeamWorkspace(planSummary.planId);
 
   return (
     <PlatformShell
