@@ -4,10 +4,12 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
+  createPasswordResetTokenRecord,
   createSessionRecord,
   createUser,
   findUserByEmail,
   getSessionUserByTokenHash,
+  resetUserPasswordByToken,
   type SessionUser,
 } from "@/lib/app-data";
 import { isDatabaseConnectivityError } from "@/lib/db";
@@ -15,6 +17,7 @@ import { isDatabaseConnectivityError } from "@/lib/db";
 export const SESSION_COOKIE_NAME = "bsc_session";
 export const WORKSPACE_COOKIE_NAME = "bsc_workspace";
 const SESSION_DURATION_DAYS = 30;
+const PASSWORD_RESET_DURATION_MINUTES = 60;
 
 export function hashValue(value: string) {
   return createHash("sha256").update(value).digest("hex");
@@ -31,12 +34,34 @@ function buildPasswordHash(password: string) {
   return `scrypt:${salt.toString("hex")}:${derivedKey.toString("hex")}`;
 }
 
+function passwordResetExpiryDate() {
+  return new Date(Date.now() + PASSWORD_RESET_DURATION_MINUTES * 60 * 1000);
+}
+
+function isValidEmailAddress(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 function safeRedirectTarget(target: string | null | undefined) {
-  if (!target || !target.startsWith("/")) {
+  if (!target || !target.startsWith("/") || target.startsWith("//")) {
     return "/dashboard";
   }
 
-  return target;
+  if (/[\r\n]/.test(target)) {
+    return "/dashboard";
+  }
+
+  try {
+    const url = new URL(target, "http://bankstatementconverter.local");
+
+    if (url.origin !== "http://bankstatementconverter.local") {
+      return "/dashboard";
+    }
+
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return "/dashboard";
+  }
 }
 
 export function validateSignupInput(input: {
@@ -49,7 +74,7 @@ export function validateSignupInput(input: {
     return "Enter your full name.";
   }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim())) {
+  if (!isValidEmailAddress(input.email)) {
     return "Enter a valid email address.";
   }
 
@@ -66,6 +91,33 @@ export function validateLoginInput(input: {
 }) {
   if (!input.email.trim() || !input.password) {
     return "Enter your email and password.";
+  }
+
+  return null;
+}
+
+export function validatePasswordResetRequestInput(input: { email: string }) {
+  if (!input.email.trim()) {
+    return "Enter your email address.";
+  }
+
+  if (!isValidEmailAddress(input.email)) {
+    return "Enter a valid email address.";
+  }
+
+  return null;
+}
+
+export function validatePasswordResetInput(input: {
+  password: string;
+  confirmPassword: string;
+}) {
+  if (input.password.length < 8) {
+    return "Use at least 8 characters for the password.";
+  }
+
+  if (input.password !== input.confirmPassword) {
+    return "Passwords do not match.";
   }
 
   return null;
@@ -171,6 +223,66 @@ export async function issueSession(userId: string) {
   };
 }
 
+export async function requestPasswordReset(email: string) {
+  const validationError = validatePasswordResetRequestInput({ email });
+
+  if (validationError) {
+    throw new Error(validationError);
+  }
+
+  const user = await findUserByEmail(email);
+
+  if (!user) {
+    return null;
+  }
+
+  const resetToken = randomBytes(32).toString("hex");
+  const expiresAt = passwordResetExpiryDate();
+
+  await createPasswordResetTokenRecord({
+    userId: user.id,
+    tokenHash: hashValue(resetToken),
+    expiresAt: expiresAt.toISOString(),
+  });
+
+  return {
+    email: user.email,
+    expiresAt,
+    name: user.name,
+    resetToken,
+    userId: user.id,
+  };
+}
+
+export async function resetPassword(input: {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}) {
+  const validationError = validatePasswordResetInput(input);
+
+  if (validationError) {
+    throw new Error(validationError);
+  }
+
+  const token = input.token.trim();
+
+  if (!token) {
+    throw new Error("This password reset link is invalid or expired.");
+  }
+
+  const user = await resetUserPasswordByToken({
+    tokenHash: hashValue(token),
+    passwordHash: buildPasswordHash(input.password),
+  });
+
+  if (!user) {
+    throw new Error("This password reset link is invalid or expired.");
+  }
+
+  return user;
+}
+
 export function sessionCookieOptions(expiresAt: Date) {
   return {
     httpOnly: true,
@@ -203,7 +315,6 @@ export async function getCurrentUser() {
     return await getSessionUserByTokenHash(hashValue(token), workspace);
   } catch (error) {
     if (isDatabaseConnectivityError(error)) {
-      console.error("Session lookup failed.", error);
       return null;
     }
 

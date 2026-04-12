@@ -1,26 +1,22 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 import { BLOG_RELATED_LINKS } from "@/lib/seo-links";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "How to Convert a Bank Statement to Excel",
   description:
     "Learn how to convert a bank statement to Excel with a clear upload, review, and export workflow built for accountants and finance teams.",
+  path: "/how-to-convert-bank-statement-to-excel",
   keywords: [
     "how to convert bank statement to excel",
     "convert bank statement to excel",
     "bank statement to excel",
     "bank statement converter",
   ],
-  openGraph: {
-    title: "How to Convert a Bank Statement to Excel",
-    description:
-      "A practical step-by-step guide to turning bank statement PDFs into clean Excel-ready files.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const sections = [
   {
@@ -122,6 +118,7 @@ const faqs = [
 export default function HowToConvertBankStatementToExcelPage() {
   return (
     <SeoSupportPage
+      currentHref="/how-to-convert-bank-statement-to-excel"
       eyebrow="How to convert bank statement to Excel"
       title="How to Convert a Bank Statement to Excel"
       intro="Yes, you can convert a bank statement to Excel with a straightforward upload, review, and export workflow that is built for accountants and finance teams."

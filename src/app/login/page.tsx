@@ -3,10 +3,15 @@ import { redirect } from "next/navigation";
 
 import { SiteHeader } from "@/components/site-header";
 import { getCurrentUser } from "@/lib/auth";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Sign in",
-};
+  description:
+    "Sign in to access saved conversions, projects, billing, and workspace settings.",
+  path: "/login",
+  noIndex: true,
+});
 
 function readValue(
   value: string | string[] | undefined,
@@ -28,6 +33,7 @@ export default async function LoginPage({
 
   const params = await searchParams;
   const error = readValue(params.error);
+  const message = readValue(params.message);
   const next = readValue(params.next);
 
   return (
@@ -56,7 +62,12 @@ export default async function LoginPage({
               />
             </label>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium">Password</span>
+              <div className="mb-2 flex items-center justify-between gap-3 text-sm font-medium">
+                <span>Password</span>
+                <Link className="text-[var(--accent)]" href="/forgot-password">
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 className="block w-full rounded-2xl border border-[var(--line)] bg-white/80 px-4 py-3 outline-none focus:border-[var(--accent)]"
                 name="password"
@@ -73,6 +84,11 @@ export default async function LoginPage({
           {error ? (
             <p className="mt-4 rounded-2xl border border-[rgba(140,63,63,0.18)] bg-[rgba(140,63,63,0.06)] px-4 py-3 text-sm text-[#8c3f3f]">
               {error}
+            </p>
+          ) : null}
+          {message ? (
+            <p className="mt-4 rounded-2xl border border-[rgba(22,106,91,0.18)] bg-[rgba(22,106,91,0.08)] px-4 py-3 text-sm text-[var(--accent)]">
+              {message}
             </p>
           ) : null}
           <p className="mt-6 text-sm text-[var(--muted)]">

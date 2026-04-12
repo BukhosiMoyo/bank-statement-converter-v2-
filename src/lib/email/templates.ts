@@ -25,6 +25,16 @@ export const EMAIL_TEMPLATE_CATALOG = [
     description: "Sent after account creation.",
   },
   {
+    id: "password-reset",
+    title: "Password reset",
+    description: "Sent when a user requests a password reset link.",
+  },
+  {
+    id: "password-reset-confirmation",
+    title: "Password reset confirmation",
+    description: "Sent after a password has been updated successfully.",
+  },
+  {
     id: "organization-invitation",
     title: "Organization invitation",
     description: "Sent when a workspace owner or admin invites a teammate.",
@@ -85,6 +95,16 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("en-ZA", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
 function paymentDetails(input: PaymentTemplateInput): EmailDetail[] {
   return [
     { label: "Workspace", value: input.workspaceName },
@@ -124,6 +144,76 @@ export function buildWelcomeEmail(input: {
     secondaryAction: {
       label: "See pricing",
       href: input.pricingUrl ?? "/pricing",
+    },
+  });
+
+  return {
+    subject,
+    ...email,
+  };
+}
+
+export function buildPasswordResetEmail(input: {
+  expiresAt: string;
+  loginUrl?: string;
+  name?: string | null;
+  resetUrl: string;
+}): RenderedEmail {
+  const subject = "Reset your Bank Statement Converter password";
+  const previewText = "Use this link to choose a new password.";
+  const person = firstName(input.name);
+  const email = renderAppEmail({
+    previewText,
+    eyebrow: "Security",
+    title: `Reset your password, ${person}.`,
+    intro:
+      "We received a request to reset the password for your account. Use the button below to choose a new password.",
+    sections: [
+      {
+        title: "Reset link",
+        body: [
+          "If you did not request a password reset, you can ignore this email.",
+        ],
+        details: [{ label: "Expires", value: formatDateTime(input.expiresAt) }],
+      },
+    ],
+    primaryAction: {
+      label: "Reset password",
+      href: input.resetUrl,
+    },
+    secondaryAction: {
+      label: "Sign in",
+      href: input.loginUrl ?? "/login",
+    },
+  });
+
+  return {
+    subject,
+    ...email,
+  };
+}
+
+export function buildPasswordResetConfirmationEmail(input: {
+  forgotPasswordUrl?: string;
+  loginUrl?: string;
+  name?: string | null;
+}): RenderedEmail {
+  const subject = "Your password was updated";
+  const previewText = "This confirms your password has been changed.";
+  const person = firstName(input.name);
+  const email = renderAppEmail({
+    previewText,
+    eyebrow: "Security",
+    title: `Password updated, ${person}.`,
+    intro:
+      "Your password has been changed successfully. If you did not make this change, reset your password again immediately.",
+    primaryAction: {
+      label: "Sign in",
+      href: input.loginUrl ?? "/login",
+    },
+    secondaryAction: {
+      label: "Reset again",
+      href: input.forgotPasswordUrl ?? "/forgot-password",
     },
   });
 

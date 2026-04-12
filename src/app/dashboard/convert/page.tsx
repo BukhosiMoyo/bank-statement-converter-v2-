@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { ConverterWorkspace } from "@/components/converter-workspace";
 import { PlatformShell } from "@/components/platform-shell";
@@ -9,6 +9,8 @@ import {
   getWorkspacePlanSummary,
   getWorkspaceScope,
   listWorkspaceProjects,
+  type SessionUser,
+  type WorkspaceScope,
 } from "@/lib/app-data";
 import { requireCurrentUser } from "@/lib/auth";
 
@@ -39,6 +41,69 @@ function buildReturnTo(input: {
 
   const serialized = params.toString();
   return serialized ? `/dashboard/convert?${serialized}` : "/dashboard/convert";
+}
+
+function buildWorkspaceRedirectPath(workspaceId: string, returnTo: string) {
+  const params = new URLSearchParams({
+    workspaceId,
+    returnTo,
+  });
+
+  return `/api/workspace?${params.toString()}`;
+}
+
+function isSameWorkspace(left: WorkspaceScope, right: WorkspaceScope) {
+  if (left.type !== right.type) {
+    return false;
+  }
+
+  if (left.type === "organization" && right.type === "organization") {
+    return left.organizationId === right.organizationId;
+  }
+
+  return left.userId === right.userId;
+}
+
+async function findAlternativeWorkspaceIdForConversion(
+  user: SessionUser,
+  currentWorkspace: WorkspaceScope,
+  conversionId: string,
+) {
+  const personalScope: WorkspaceScope = {
+    type: "personal",
+    userId: user.id,
+  };
+  const candidateWorkspaces: Array<{
+    scope: WorkspaceScope;
+    workspaceId: string;
+  }> = [
+    {
+      scope: personalScope,
+      workspaceId: "personal",
+    },
+    ...user.organizations.map((organization) => ({
+      scope: {
+        type: "organization" as const,
+        organizationId: organization.id,
+        role: organization.role,
+        userId: user.id,
+      } satisfies WorkspaceScope,
+      workspaceId: organization.id,
+    })),
+  ].filter((candidate) => !isSameWorkspace(candidate.scope, currentWorkspace));
+
+  const matches = await Promise.all(
+    candidateWorkspaces.map(async (candidate) => ({
+      workspaceId: candidate.workspaceId,
+      conversion: await getWorkspaceConversionById(
+        user.id,
+        candidate.scope,
+        conversionId,
+      ),
+    })),
+  );
+
+  return matches.find((candidate) => candidate.conversion)?.workspaceId ?? null;
 }
 
 export default async function DashboardConvertPage({
@@ -77,6 +142,21 @@ export default async function DashboardConvertPage({
     ]);
 
   if (conversionId && !storedConversion) {
+    const fallbackWorkspaceId = await findAlternativeWorkspaceIdForConversion(
+      user,
+      workspace,
+      conversionId,
+    );
+
+    if (fallbackWorkspaceId) {
+      redirect(
+        buildWorkspaceRedirectPath(
+          fallbackWorkspaceId,
+          buildReturnTo({ conversionId, handoffId }),
+        ),
+      );
+    }
+
     notFound();
   }
 

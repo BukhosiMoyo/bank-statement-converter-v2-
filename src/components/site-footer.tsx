@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { BrandLogo } from "@/components/brand-media";
 import { SITE_CONTAINER_CLASS } from "@/lib/layout";
 import { BLOG_ARTICLES } from "@/lib/seo-links";
 
@@ -19,6 +20,7 @@ const footerGroups = [
     title: "Resources",
     links: [
       { href: "/blog", label: "Blog" },
+      { href: "/sitemap", label: "Sitemap" },
       { href: BLOG_ARTICLES[0].href, label: BLOG_ARTICLES[0].label },
       { href: BLOG_ARTICLES[5].href, label: BLOG_ARTICLES[5].label },
     ],
@@ -51,9 +53,7 @@ export function SiteFooter() {
       <div className="panel rounded-[1.75rem] px-5 py-6 sm:px-6 sm:py-8">
         <div className="grid gap-8 lg:grid-cols-[1.2fr_repeat(3,0.8fr)]">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--foreground)]">
-              Bank Statement Converter
-            </p>
+            <BrandLogo className="h-auto w-[16rem]" />
             <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--muted)]">
               Convert digital bank statement PDFs into clean CSV and Excel-ready
               files, organize client work in projects, and keep team work inside

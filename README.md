@@ -40,8 +40,12 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ```bash
 npm run lint
+npm run typecheck
 npm run build
+npm run production-check
 ```
+
+`npm run production-check` runs lint, type generation, typecheck, a production build, and an environment preflight against the current shell plus any local `.env*` files that exist in the repo.
 
 ## Deployment
 
@@ -52,8 +56,8 @@ The app is ready to deploy as a standard Next.js application.
 Set these in your deployment platform before going live:
 
 ```bash
-SITE_URL=https://your-domain.com
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
+SITE_URL=https://bankstatementconvertor.co.za
+NEXT_PUBLIC_SITE_URL=https://bankstatementconvertor.co.za
 DATABASE_URL=postgresql://...
 ADMIN_EMAILS=you@example.com
 EFT_ACCOUNT_NAME=Your Business Name
@@ -70,6 +74,7 @@ RESEND_API_KEY=re_...
 EMAIL_FROM="Bank Statement Converter <billing@your-domain.com>"
 EMAIL_FROM_ACCOUNTS="Your Brand <accounts@your-domain.com>"
 EMAIL_FROM_BILLING="Your Brand <billing@your-domain.com>"
+MAX_STATEMENT_UPLOAD_MB=20
 PAYMENT_PROOF_RETENTION_DAYS=30
 ```
 
@@ -81,6 +86,15 @@ PAYMENT_PROOF_RETENTION_DAYS=30
 - Use `EMAIL_FROM_ACCOUNTS` and `EMAIL_FROM_BILLING` if you want different sender identities for account emails and payment emails.
 - `SITE_URL` and `NEXT_PUBLIC_SITE_URL` should point to the final public domain.
 - `ADMIN_EMAILS` controls who gets platform admin access.
+- `MAX_STATEMENT_UPLOAD_MB` controls the server-side PDF upload cap. The default is `20`.
+- Run `npm run production-check` before pushing a release to catch missing env vars, placeholder values, and a broken clean-build pipeline.
+
+### Neon database
+
+- Create a Neon Postgres database and copy its connection string into `DATABASE_URL`.
+- Set `SITE_URL` and `NEXT_PUBLIC_SITE_URL` to `https://bankstatementconvertor.co.za` in production.
+- Leave `PGSSL` unset for Neon. Do not use `PGSSL=disable`.
+- The app creates its own tables on first use through the existing Postgres bootstrapping in the app layer.
 
 ## Notes
 

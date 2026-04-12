@@ -1,8 +1,12 @@
 import { LegalPageShell } from "@/components/legal-page-shell";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Privacy Policy",
-};
+  description:
+    "Privacy policy for Bank Statement Converter, including conversion handling, saved data, workspaces, and payment records.",
+  path: "/privacy",
+});
 
 const sections = [
   {

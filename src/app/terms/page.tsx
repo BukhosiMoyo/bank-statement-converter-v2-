@@ -1,8 +1,12 @@
 import { LegalPageShell } from "@/components/legal-page-shell";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Terms of Service",
-};
+  description:
+    "Terms of service for Bank Statement Converter, including supported files, review responsibilities, plans, and workspace use.",
+  path: "/terms",
+});
 
 const sections = [
   {

@@ -1,25 +1,21 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "FNB Bank Statement to Excel",
   description:
     "Convert an FNB bank statement to Excel with a clean review-first workflow for accountants, bookkeepers, and finance teams.",
+  path: "/fnb-bank-statement-to-excel",
   keywords: [
     "FNB bank statement to Excel",
     "convert FNB bank statement to Excel",
     "FNB statement to Excel",
     "FNB bank statement converter",
   ],
-  openGraph: {
-    title: "FNB Bank Statement to Excel",
-    description:
-      "Upload an FNB bank statement PDF, review extracted transactions, and export a clean Excel or CSV file.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const relatedLinks = [
   { href: "/bank-statements-to-excel", label: "Bank statements to Excel" },
@@ -156,6 +152,7 @@ const faqs = [
 export default function FnbBankStatementToExcelPage() {
   return (
     <SeoSupportPage
+      currentHref="/fnb-bank-statement-to-excel"
       eyebrow="FNB bank statement to Excel"
       title="FNB Bank Statement to Excel"
       intro="Need to convert an FNB bank statement to Excel? Upload the PDF, review the extracted transactions, and export a clean working file for bookkeeping and reconciliation."

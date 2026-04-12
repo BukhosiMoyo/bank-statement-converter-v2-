@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 
+import { BrandIcon, BrandLogo } from "@/components/brand-media";
 import type { SessionUser } from "@/lib/app-data";
 
 type PlatformView =
@@ -56,14 +57,15 @@ function BrandMark({
   return (
     <Link
       href="/dashboard"
-      className={`inline-flex items-center text-sm font-semibold tracking-[0.16em] text-[var(--foreground)] uppercase ${
-        collapsed ? "justify-center" : "gap-3"
+      className={`inline-flex items-center ${
+        collapsed ? "justify-center" : ""
       }`}
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-black/10 bg-[linear-gradient(145deg,#1b7a66,#0f5145)] text-white shadow-[0_16px_36px_rgba(21,104,87,0.24)]">
-        BS
-      </span>
-      {!collapsed ? <span>Bank Statement Converter</span> : null}
+      {collapsed ? (
+        <BrandIcon className="h-11 w-11" priority />
+      ) : (
+        <BrandLogo className="h-auto w-[15rem]" priority />
+      )}
     </Link>
   );
 }

@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "PDF Bank Statement to CSV",
   description:
     "Convert a PDF bank statement to CSV with a clear preview, review, and export workflow. Built for accountants and finance teams handling digital bank statements.",
+  path: "/pdf-bank-statement-to-csv",
   keywords: [
     "pdf bank statement to csv",
     "pdf bank statement",
@@ -13,14 +15,8 @@ export const metadata: Metadata = {
     "convert pdf bank statement to csv",
     "bank statement pdf to excel",
   ],
-  openGraph: {
-    title: "PDF Bank Statement to CSV",
-    description:
-      "Upload a bank statement PDF, review extracted rows, and export a clean CSV or Excel-ready file.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const sections = [
   {
@@ -127,6 +123,7 @@ const faqs = [
 export default function PdfBankStatementToCsvPage() {
   return (
     <SeoSupportPage
+      currentHref="/pdf-bank-statement-to-csv"
       eyebrow="PDF bank statement to CSV"
       title="PDF Bank Statement to CSV"
       intro="Need to convert a PDF bank statement to CSV? Upload a digital statement PDF, review the extracted transactions, and export a clean CSV or Excel-ready file."

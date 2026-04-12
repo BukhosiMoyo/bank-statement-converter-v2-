@@ -13,6 +13,18 @@ const DATABASE_ERROR_CODES = new Set([
   "EAI_AGAIN",
 ]);
 
+const DATABASE_ERROR_MESSAGE_FRAGMENTS = [
+  "DATABASE_URL is not configured.",
+  "connect ECONNREFUSED",
+  "connect ECONNRESET",
+  "getaddrinfo ENOTFOUND",
+  "connect ETIMEDOUT",
+  "EHOSTUNREACH",
+  "EAI_AGAIN",
+  "Connection terminated unexpectedly",
+  "server closed the connection unexpectedly",
+];
+
 function getDatabaseUrl() {
   return process.env.DATABASE_URL?.trim() || null;
 }
@@ -48,11 +60,14 @@ export function getDatabasePool() {
   return global.__bankStatementConverterPool;
 }
 
-export function isDatabaseConnectivityError(error: unknown): boolean {
-  if (error instanceof Error && error.message === "DATABASE_URL is not configured.") {
-    return true;
-  }
+function matchesConnectivityText(value: string) {
+  return (
+    DATABASE_ERROR_CODES.has(value) ||
+    DATABASE_ERROR_MESSAGE_FRAGMENTS.some((fragment) => value.includes(fragment))
+  );
+}
 
+export function isDatabaseConnectivityError(error: unknown): boolean {
   if (error instanceof AggregateError) {
     return error.errors.some((entry) => isDatabaseConnectivityError(entry));
   }
@@ -61,13 +76,23 @@ export function isDatabaseConnectivityError(error: unknown): boolean {
     return false;
   }
 
-  if ("code" in error && typeof error.code === "string") {
-    return DATABASE_ERROR_CODES.has(error.code);
+  const errorRecord = error as Record<string, unknown>;
+
+  if (Array.isArray(errorRecord.errors)) {
+    return errorRecord.errors.some((entry) => isDatabaseConnectivityError(entry));
   }
 
-  if ("message" in error && typeof error.message === "string") {
-    return DATABASE_ERROR_CODES.has(error.message);
+  if (errorRecord.cause) {
+    return isDatabaseConnectivityError(errorRecord.cause);
   }
 
-  return false;
+  return ["code", "errno", "message"].some((field) => {
+    const value = errorRecord[field];
+
+    if (typeof value !== "string") {
+      return false;
+    }
+
+    return matchesConnectivityText(value);
+  });
 }

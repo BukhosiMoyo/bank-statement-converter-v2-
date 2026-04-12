@@ -15,6 +15,15 @@ function buildRedirect(request: Request, path: string) {
   return NextResponse.redirect(new URL(path, request.url), 303);
 }
 
+function sanitizeDownloadFileName(fileName: string) {
+  const sanitized = fileName
+    .replace(/[\r\n"]/g, "")
+    .replace(/[<>:|?*\\/]/g, "-")
+    .trim();
+
+  return sanitized || "proof";
+}
+
 export async function GET(
   request: Request,
   context: { params: Promise<{ paymentRequestId: string }> },
@@ -39,8 +48,10 @@ export async function GET(
 
     return new NextResponse(new Uint8Array(proof.bytes), {
       headers: {
+        "cache-control": "private, no-store, max-age=0",
         "content-type": proof.contentType,
-        "content-disposition": `inline; filename="${proof.fileName}"`,
+        "content-disposition": `inline; filename="${sanitizeDownloadFileName(proof.fileName)}"`,
+        "x-content-type-options": "nosniff",
       },
     });
   } catch {

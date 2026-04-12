@@ -3,10 +3,14 @@ import { redirect } from "next/navigation";
 import { ConverterWorkspace } from "@/components/converter-workspace";
 import { SiteHeader } from "@/components/site-header";
 import { getCurrentUser } from "@/lib/auth";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Convert",
-};
+  description:
+    "Upload a digital bank statement PDF, review extracted transactions, and export clean Excel or CSV files.",
+  path: "/convert",
+});
 
 function buildDashboardConvertPath(input: {
   conversionId: string | null;

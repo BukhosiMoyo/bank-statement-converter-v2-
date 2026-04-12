@@ -11,11 +11,15 @@ import {
   getWorkspaceScope,
 } from "@/lib/app-data";
 import { SITE_CONTAINER_CLASS } from "@/lib/layout";
+import { buildPageMetadata } from "@/lib/metadata";
 import { listPlanDefinitions } from "@/lib/plans";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Pricing",
-};
+  description:
+    "Pricing plans and credit packs for accountants and finance teams converting bank statements to Excel or CSV.",
+  path: "/pricing",
+});
 
 const ENTERPRISE_CONTACT_HREF =
   "mailto:sales@bankstatementconverter.com?subject=Enterprise%20plan";

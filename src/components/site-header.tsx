@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BrandIcon, BrandLogo } from "@/components/brand-media";
 import { isAdminEmail } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/auth";
 import { SITE_CONTAINER_CLASS } from "@/lib/layout";
@@ -14,12 +15,10 @@ function BrandMark() {
   return (
     <Link
       href="/"
-      className="inline-flex items-center gap-3 text-sm font-semibold tracking-[0.16em] text-[var(--foreground)] uppercase"
+      className="inline-flex items-center"
     >
-      <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-black/10 bg-[linear-gradient(145deg,#1b7a66,#0f5145)] text-white shadow-[0_16px_36px_rgba(21,104,87,0.24)]">
-        BS
-      </span>
-      <span className="hidden sm:block">Bank Statement Converter</span>
+      <BrandIcon className="h-11 w-11 sm:hidden" priority />
+      <BrandLogo className="hidden h-auto w-[15rem] sm:block" priority />
     </Link>
   );
 }

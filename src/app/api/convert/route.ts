@@ -14,8 +14,39 @@ import {
   parseStatementPreview,
 } from "@/lib/statement-parser";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+const DEFAULT_MAX_STATEMENT_UPLOAD_BYTES = 20 * 1024 * 1024;
+
 function shouldEnforceAnonymousLimit(isAuthenticated: boolean) {
   return process.env.NODE_ENV === "production" && !isAuthenticated;
+}
+
+function getMaxStatementUploadBytes() {
+  const rawValue = process.env.MAX_STATEMENT_UPLOAD_MB?.trim();
+
+  if (!rawValue) {
+    return DEFAULT_MAX_STATEMENT_UPLOAD_BYTES;
+  }
+
+  const parsedValue = Number.parseInt(rawValue, 10);
+
+  if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+    return DEFAULT_MAX_STATEMENT_UPLOAD_BYTES;
+  }
+
+  return parsedValue * 1024 * 1024;
+}
+
+function formatUploadLimit(bytes: number) {
+  const megabytes = bytes / (1024 * 1024);
+
+  if (Number.isInteger(megabytes)) {
+    return `${megabytes}MB`;
+  }
+
+  return `${megabytes.toFixed(1)}MB`;
 }
 
 function errorResponse(
@@ -27,7 +58,12 @@ function errorResponse(
     guidance && guidance.length > 0
       ? { error, guidance }
       : { error },
-    { status },
+    {
+      status,
+      headers: {
+        "cache-control": "no-store",
+      },
+    },
   );
 }
 
@@ -59,7 +95,12 @@ export async function POST(request: Request) {
   if (!(statement instanceof File)) {
     return NextResponse.json(
       { error: "A PDF is required." },
-      { status: 400 },
+      {
+        status: 400,
+        headers: {
+          "cache-control": "no-store",
+        },
+      },
     );
   }
 
@@ -70,7 +111,26 @@ export async function POST(request: Request) {
   ) {
     return NextResponse.json(
       { error: "Only PDF files are supported." },
-      { status: 400 },
+      {
+        status: 400,
+        headers: {
+          "cache-control": "no-store",
+        },
+      },
+    );
+  }
+
+  if (statement.size === 0) {
+    return errorResponse("The PDF is empty.", 400);
+  }
+
+  const maxStatementUploadBytes = getMaxStatementUploadBytes();
+
+  if (statement.size > maxStatementUploadBytes) {
+    return errorResponse(
+      `PDF files must be ${formatUploadLimit(maxStatementUploadBytes)} or smaller.`,
+      413,
+      ["Upload a smaller digital PDF or split the statement into separate files."],
     );
   }
 
@@ -155,6 +215,10 @@ export async function POST(request: Request) {
       conversionId: savedConversion?.id ?? null,
       projectId: savedConversion?.projectId ?? null,
       projectName: savedConversion?.projectName ?? null,
+    }, {
+      headers: {
+        "cache-control": "no-store",
+      },
     });
   } catch (error) {
     if (error instanceof Error && error.message === "Project not found.") {

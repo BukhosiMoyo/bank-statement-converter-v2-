@@ -1,26 +1,22 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 import { BLOG_RELATED_LINKS } from "@/lib/seo-links";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "How Accountants Process Bank Statements Faster",
   description:
     "A practical guide to how accountants process bank statements faster using review-first conversion, batch uploads, projects, and cleaner exports.",
+  path: "/how-accountants-process-bank-statements-faster",
   keywords: [
     "how accountants process bank statements faster",
     "process bank statements faster",
     "bank statement workflow for accountants",
     "bank statement conversion for accountants",
   ],
-  openGraph: {
-    title: "How Accountants Process Bank Statements Faster",
-    description:
-      "A practical workflow guide for accountants handling bank statements at scale.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const sections = [
   {
@@ -119,6 +115,7 @@ const faqs = [
 export default function HowAccountantsProcessBankStatementsFasterPage() {
   return (
     <SeoSupportPage
+      currentHref="/how-accountants-process-bank-statements-faster"
       eyebrow="How accountants process bank statements faster"
       title="How Accountants Process Bank Statements Faster"
       intro="Accountants process bank statements faster when they use digital PDFs, review-first conversion, batch uploads, and saved client workflows instead of repeating manual cleanup every month."

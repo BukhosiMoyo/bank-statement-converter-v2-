@@ -1,25 +1,21 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Capitec Bank Statement to Excel",
   description:
     "Convert a Capitec bank statement to Excel with a clean review-first workflow built for accountants and bookkeepers.",
+  path: "/capitec-bank-statement-to-excel",
   keywords: [
     "Capitec bank statement to Excel",
     "convert Capitec bank statement to Excel",
     "Capitec statement to Excel",
     "Capitec bank statement converter",
   ],
-  openGraph: {
-    title: "Capitec Bank Statement to Excel",
-    description:
-      "Upload a Capitec statement PDF, review the extracted transactions, and export clean Excel or CSV output.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const relatedLinks = [
   { href: "/bank-statements-to-excel", label: "Bank statements to Excel" },
@@ -156,6 +152,7 @@ const faqs = [
 export default function CapitecBankStatementToExcelPage() {
   return (
     <SeoSupportPage
+      currentHref="/capitec-bank-statement-to-excel"
       eyebrow="Capitec bank statement to Excel"
       title="Capitec Bank Statement to Excel"
       intro="Need to convert a Capitec bank statement to Excel? Upload the PDF, review the extracted rows, and export a clean spreadsheet-ready file for bookkeeping and client work."

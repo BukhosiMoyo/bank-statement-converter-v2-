@@ -1,4 +1,5 @@
 import { getSiteUrl } from "@/lib/site-url";
+import { BRAND_NAME } from "@/lib/brand";
 
 export type RenderedEmail = {
   subject: string;
@@ -33,9 +34,6 @@ type EmailLayoutOptions = {
   secondaryAction?: EmailAction;
   footnote?: string;
 };
-
-const BRAND_NAME = "Bank Statement Converter";
-const BRAND_MARK = "BS";
 
 function escapeHtml(value: string) {
   return value
@@ -196,6 +194,7 @@ function renderTextAction(label: string, href: string) {
 
 export function renderAppEmail(options: EmailLayoutOptions): Omit<RenderedEmail, "subject"> {
   const sections = options.sections ?? [];
+  const brandLogoUrl = absoluteUrl("/brand/logo.png");
   const actionMarkup = [options.primaryAction, options.secondaryAction]
     .filter((action): action is EmailAction => Boolean(action))
     .map((action, index) =>
@@ -261,32 +260,21 @@ export function renderAppEmail(options: EmailLayoutOptions): Omit<RenderedEmail,
                 <div style="padding: 28px 28px 0;">
                   <div
                     style="
-                      align-items: center;
-                      color: #17202b;
-                      display: inline-flex;
-                      font-size: 12px;
-                      font-weight: 700;
-                      gap: 12px;
-                      letter-spacing: 0.16em;
-                      text-transform: uppercase;
+                      display: inline-block;
                     "
                   >
-                    <span
+                    <img
+                      alt="${escapeHtml(BRAND_NAME)}"
+                      height="71"
+                      src="${escapeHtml(brandLogoUrl)}"
                       style="
-                        align-items: center;
-                        background: linear-gradient(145deg, #1b7a66, #0f5145);
-                        border: 1px solid rgba(0, 0, 0, 0.08);
-                        border-radius: 18px;
-                        color: #ffffff;
-                        display: inline-flex;
-                        height: 44px;
-                        justify-content: center;
-                        width: 44px;
+                        display: block;
+                        height: auto;
+                        max-width: 280px;
+                        width: 100%;
                       "
-                    >
-                      ${BRAND_MARK}
-                    </span>
-                    <span>${BRAND_NAME}</span>
+                      width="280"
+                    />
                   </div>
                 </div>
 

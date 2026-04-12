@@ -3,10 +3,15 @@ import { redirect } from "next/navigation";
 
 import { SiteHeader } from "@/components/site-header";
 import { getCurrentUser } from "@/lib/auth";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Create account",
-};
+  description:
+    "Create an account to save conversions, organize client projects, and manage statement workflows.",
+  path: "/signup",
+  noIndex: true,
+});
 
 function readValue(
   value: string | string[] | undefined,

@@ -1,26 +1,22 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 import { BLOG_RELATED_LINKS } from "@/lib/seo-links";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Can You Convert a Scanned Bank Statement to Excel?",
   description:
     "Can you convert a scanned bank statement to Excel? This guide explains what works, what does not, and why digital PDFs are still the best input.",
+  path: "/can-you-convert-a-scanned-bank-statement-to-excel",
   keywords: [
     "can you convert a scanned bank statement to excel",
     "scanned bank statement to excel",
     "image bank statement to excel",
     "digital vs scanned bank statement pdf",
   ],
-  openGraph: {
-    title: "Can You Convert a Scanned Bank Statement to Excel?",
-    description:
-      "A practical guide to scanned bank statement limitations and why digital PDFs work better.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const sections = [
   {
@@ -119,6 +115,7 @@ const faqs = [
 export default function CanYouConvertAScannedBankStatementToExcelPage() {
   return (
     <SeoSupportPage
+      currentHref="/can-you-convert-a-scanned-bank-statement-to-excel"
       eyebrow="Can you convert a scanned bank statement to Excel"
       title="Can You Convert a Scanned Bank Statement to Excel?"
       intro="Yes, sometimes, but scanned bank statements are still a best-effort case. Digital, text-based statement PDFs remain the most reliable path for clean Excel conversion."

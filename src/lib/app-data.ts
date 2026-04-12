@@ -1056,6 +1056,17 @@ export async function ensureAppTables() {
       `);
 
       await pool.query(`
+        CREATE TABLE IF NOT EXISTS user_password_reset_tokens (
+          id text PRIMARY KEY,
+          user_id text NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+          token_hash text NOT NULL UNIQUE,
+          created_at timestamptz NOT NULL DEFAULT now(),
+          expires_at timestamptz NOT NULL,
+          used_at timestamptz
+        )
+      `);
+
+      await pool.query(`
         CREATE TABLE IF NOT EXISTS user_conversions (
           id text PRIMARY KEY,
           user_id text NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
@@ -1291,6 +1302,11 @@ export async function ensureAppTables() {
       `);
 
       await pool.query(`
+        CREATE INDEX IF NOT EXISTS user_password_reset_tokens_user_id_expires_at_idx
+        ON user_password_reset_tokens (user_id, expires_at DESC)
+      `);
+
+      await pool.query(`
         CREATE INDEX IF NOT EXISTS user_conversions_user_id_created_at_idx
         ON user_conversions (user_id, created_at DESC)
       `);
@@ -1387,6 +1403,11 @@ export async function ensureAppTables() {
 
       await pool.query(`
         ALTER TABLE user_sessions
+        ALTER COLUMN created_at SET DEFAULT now()
+      `);
+
+      await pool.query(`
+        ALTER TABLE user_password_reset_tokens
         ALTER COLUMN created_at SET DEFAULT now()
       `);
 
@@ -2159,6 +2180,141 @@ export async function deleteSessionByTokenHash(tokenHash: string) {
     `,
     [tokenHash],
   );
+}
+
+export async function deleteSessionsByUserId(userId: string) {
+  await ensureAppTables();
+  const pool = getDatabasePool();
+
+  await pool.query(
+    `
+      DELETE FROM user_sessions
+      WHERE user_id = $1
+    `,
+    [userId],
+  );
+}
+
+export async function createPasswordResetTokenRecord(input: {
+  userId: string;
+  tokenHash: string;
+  expiresAt: string;
+}) {
+  await ensureAppTables();
+  const pool = getDatabasePool();
+
+  await pool.query(
+    `
+      DELETE FROM user_password_reset_tokens
+      WHERE user_id = $1
+         OR expires_at <= now()
+         OR used_at IS NOT NULL
+    `,
+    [input.userId],
+  );
+
+  await pool.query(
+    `
+      INSERT INTO user_password_reset_tokens (
+        id,
+        user_id,
+        token_hash,
+        created_at,
+        expires_at,
+        used_at
+      )
+      VALUES ($1, $2, $3, now(), $4::timestamptz, NULL)
+    `,
+    [randomUUID(), input.userId, input.tokenHash, input.expiresAt],
+  );
+}
+
+export async function resetUserPasswordByToken(input: {
+  tokenHash: string;
+  passwordHash: string;
+}): Promise<Pick<UserRecord, "id" | "name" | "email"> | null> {
+  await ensureAppTables();
+  const pool = getDatabasePool();
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+    await client.query(`
+      DELETE FROM user_password_reset_tokens
+      WHERE expires_at <= now()
+         OR used_at IS NOT NULL
+    `);
+
+    const tokenResult = await client.query<{
+      id: string;
+      user_id: string;
+      name: string;
+      email: string;
+    }>(
+      `
+        SELECT
+          token.id,
+          token.user_id,
+          user_record.name,
+          user_record.email
+        FROM user_password_reset_tokens token
+        JOIN app_users user_record ON user_record.id = token.user_id
+        WHERE token.token_hash = $1
+          AND token.expires_at > now()
+          AND token.used_at IS NULL
+        LIMIT 1
+        FOR UPDATE
+      `,
+      [input.tokenHash],
+    );
+
+    if (tokenResult.rowCount === 0) {
+      await client.query("ROLLBACK");
+      return null;
+    }
+
+    const tokenRow = tokenResult.rows[0];
+
+    await client.query(
+      `
+        UPDATE app_users
+        SET password_hash = $2,
+            updated_at = now()
+        WHERE id = $1
+      `,
+      [tokenRow.user_id, input.passwordHash],
+    );
+
+    await client.query(
+      `
+        UPDATE user_password_reset_tokens
+        SET used_at = now()
+        WHERE id = $1
+      `,
+      [tokenRow.id],
+    );
+
+    await client.query(
+      `
+        DELETE FROM user_sessions
+        WHERE user_id = $1
+      `,
+      [tokenRow.user_id],
+    );
+
+    await client.query("COMMIT");
+
+    return {
+      id: tokenRow.user_id,
+      name: tokenRow.name,
+      email: tokenRow.email,
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function getSessionUserByTokenHash(

@@ -1,26 +1,22 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 import { BLOG_RELATED_LINKS } from "@/lib/seo-links";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Convert PDF Bank Statement to CSV Step by Step",
   description:
     "A step-by-step guide to converting a PDF bank statement to CSV, including upload, preview, review, export, and support limitations.",
+  path: "/convert-pdf-bank-statement-to-csv-step-by-step",
   keywords: [
     "convert pdf bank statement to csv step by step",
     "convert pdf bank statement to csv",
     "pdf bank statement to csv",
     "bank statement pdf to excel",
   ],
-  openGraph: {
-    title: "Convert PDF Bank Statement to CSV Step by Step",
-    description:
-      "Learn how to move from a bank statement PDF to clean CSV output with a review-first workflow.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const sections = [
   {
@@ -122,6 +118,7 @@ const faqs = [
 export default function ConvertPdfBankStatementToCsvStepByStepPage() {
   return (
     <SeoSupportPage
+      currentHref="/convert-pdf-bank-statement-to-csv-step-by-step"
       eyebrow="Convert PDF bank statement to CSV step by step"
       title="Convert PDF Bank Statement to CSV Step by Step"
       intro="Yes, you can convert a PDF bank statement to CSV with a simple upload, preview, and export workflow that gives accountants a review step before download."

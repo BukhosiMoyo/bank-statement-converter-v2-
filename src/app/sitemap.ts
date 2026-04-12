@@ -3,22 +3,26 @@ import { join, relative } from "node:path";
 
 import type { MetadataRoute } from "next";
 
+import { DYNAMIC_BLOG_ARTICLE_LINKS } from "@/lib/blog-content";
 import { getSiteUrl } from "@/lib/site-url";
 
 const APP_DIRECTORY = join(process.cwd(), "src", "app");
+const BLOG_CONTENT_PATH = join(process.cwd(), "src", "lib", "blog-content.ts");
 const INTERNAL_ROUTE_PREFIXES = [
   "/admin",
   "/api",
   "/dashboard",
+  "/forgot-password",
   "/login",
   "/payments",
-  "/privacy",
   "/projects",
+  "/reset-password",
   "/settings",
-  "/terms",
+  "/signup",
 ] as const;
 const HIGH_PRIORITY_ROUTES = new Set([
   "/",
+  "/blog",
   "/convert",
   "/pricing",
   "/bank-statements-to-excel",
@@ -60,12 +64,25 @@ function resolvePriority(route: string) {
     return 0.8;
   }
 
+  if (route === "/privacy" || route === "/terms") {
+    return 0.2;
+  }
+
   return 0.7;
 }
 
 function resolveChangeFrequency(route: string): MetadataRoute.Sitemap[number]["changeFrequency"] {
-  if (route === "/" || route === "/convert" || route === "/pricing") {
+  if (
+    route === "/" ||
+    route === "/blog" ||
+    route === "/convert" ||
+    route === "/pricing"
+  ) {
     return "weekly";
+  }
+
+  if (route === "/privacy" || route === "/terms") {
+    return "yearly";
   }
 
   return "monthly";
@@ -95,12 +112,23 @@ async function collectPagePaths(directory: string): Promise<string[]> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const pagePaths = await collectPagePaths(APP_DIRECTORY);
-  const routes = pagePaths
+  const staticRoutes = pagePaths
     .map((pagePath) => ({
+      sourcePath: pagePath,
       pagePath,
       route: normalizeRouteFromPagePath(pagePath),
     }))
-    .filter(({ route }) => isIncludedRoute(route))
+    .filter(({ route }) => isIncludedRoute(route));
+  const dynamicBlogRoutes = DYNAMIC_BLOG_ARTICLE_LINKS.map(({ href }) => ({
+    sourcePath: BLOG_CONTENT_PATH,
+    pagePath: join(APP_DIRECTORY, "blog", "[slug]", "page.tsx"),
+    route: href,
+  }));
+  const routes = [...staticRoutes, ...dynamicBlogRoutes]
+    .filter(
+      ({ route }, index, entries) =>
+        entries.findIndex((candidate) => candidate.route === route) === index,
+    )
     .sort((left, right) => {
       if (left.route === "/") {
         return -1;
@@ -114,8 +142,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
   return Promise.all(
-    routes.map(async ({ pagePath, route }) => {
-      const fileStat = await stat(pagePath);
+    routes.map(async ({ route, sourcePath }) => {
+      const fileStat = await stat(sourcePath);
 
       return {
         url: `${siteUrl}${route}`,

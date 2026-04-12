@@ -1,25 +1,21 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Bank Statements to Excel",
   description:
     "Convert bank statements to Excel with clean, accountant-ready outputs. Upload a PDF statement, review extracted transactions, and download Excel or CSV files.",
+  path: "/bank-statements-to-excel",
   keywords: [
     "bank statements to excel",
     "convert bank statements to excel",
     "bank statement to excel converter",
     "convert bank statement to excel",
   ],
-  openGraph: {
-    title: "Bank Statements to Excel",
-    description:
-      "Convert bank statements to Excel with clean, review-ready outputs for accountants and bookkeepers.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const sections = [
   {
@@ -138,6 +134,7 @@ const faqs = [
 export default function BankStatementsToExcelPage() {
   return (
     <SeoSupportPage
+      currentHref="/bank-statements-to-excel"
       eyebrow="Bank statements to Excel"
       title="Bank Statements to Excel"
       intro="Need to convert bank statements to Excel? Upload a digital PDF, review the extracted transactions, and download a clean working file in seconds."

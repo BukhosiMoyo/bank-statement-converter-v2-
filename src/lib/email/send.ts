@@ -11,6 +11,8 @@ import {
   buildPaymentRejectedEmail,
   buildPaymentRequestCreatedEmail,
   buildPaymentUnderReviewEmail,
+  buildPasswordResetConfirmationEmail,
+  buildPasswordResetEmail,
   buildWelcomeEmail,
 } from "@/lib/email/templates";
 
@@ -156,6 +158,40 @@ export async function sendWelcomeEmail(input: {
     dashboardUrl: "/dashboard",
     name: input.name,
     pricingUrl: "/pricing",
+  });
+
+  return sendEmail({
+    ...email,
+    fromPurpose: "accounts",
+    to: input.email,
+  });
+}
+
+export async function sendPasswordResetEmail(input: {
+  email: string;
+  expiresAt: string;
+  name?: string | null;
+  resetUrl: string;
+}) {
+  const email = buildPasswordResetEmail({
+    expiresAt: input.expiresAt,
+    name: input.name,
+    resetUrl: input.resetUrl,
+  });
+
+  return sendEmail({
+    ...email,
+    fromPurpose: "accounts",
+    to: input.email,
+  });
+}
+
+export async function sendPasswordResetConfirmationEmail(input: {
+  email: string;
+  name?: string | null;
+}) {
+  const email = buildPasswordResetConfirmationEmail({
+    name: input.name,
   });
 
   return sendEmail({

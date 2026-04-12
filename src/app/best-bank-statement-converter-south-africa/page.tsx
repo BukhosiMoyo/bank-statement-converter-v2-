@@ -1,26 +1,22 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 import { BLOG_RELATED_LINKS } from "@/lib/seo-links";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Best Bank Statement Converter South Africa",
   description:
     "What makes the best bank statement converter in South Africa? This guide covers review-first workflows, supported banks, batch uploads, and team features.",
+  path: "/best-bank-statement-converter-south-africa",
   keywords: [
     "best bank statement converter South Africa",
     "bank statement converter South Africa",
     "South African bank statement converter",
     "bank statement converter for accountants in South Africa",
   ],
-  openGraph: {
-    title: "Best Bank Statement Converter South Africa",
-    description:
-      "A practical guide to choosing a bank statement converter for South African accountants and firms.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const sections = [
   {
@@ -119,6 +115,7 @@ const faqs = [
 export default function BestBankStatementConverterSouthAfricaPage() {
   return (
     <SeoSupportPage
+      currentHref="/best-bank-statement-converter-south-africa"
       eyebrow="Best bank statement converter South Africa"
       title="Best Bank Statement Converter South Africa"
       intro="Looking for the best bank statement converter in South Africa? The best option is one that supports local bank layouts, gives you a review step before export, and fits recurring accounting work."

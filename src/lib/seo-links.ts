@@ -1,7 +1,14 @@
+import { DYNAMIC_BLOG_ARTICLE_LINKS } from "@/lib/blog-content";
+
 export type PublicArticleLink = {
   href: string;
   label: string;
   description: string;
+};
+
+export type PublicGuideLink = {
+  href: string;
+  label: string;
 };
 
 export const BLOG_ARTICLES: PublicArticleLink[] = [
@@ -71,6 +78,7 @@ export const BLOG_ARTICLES: PublicArticleLink[] = [
     description:
       "What works, what does not, and where scanned statements still need extra care.",
   },
+  ...DYNAMIC_BLOG_ARTICLE_LINKS,
 ];
 
 export const BLOG_RELATED_LINKS = [
@@ -80,3 +88,35 @@ export const BLOG_RELATED_LINKS = [
     label: article.label,
   })),
 ] as const;
+
+function dedupeGuideLinks(links: PublicGuideLink[]) {
+  return links.filter(
+    (link, index, entries) =>
+      entries.findIndex((candidate) => candidate.href === link.href) === index,
+  );
+}
+
+export function buildGuideLinks({
+  currentHref,
+  preferredLinks = [],
+  limit = 5,
+}: {
+  currentHref: string;
+  preferredLinks?: PublicGuideLink[];
+  limit?: number;
+}) {
+  const fallbackLinks = BLOG_ARTICLES.filter((article) => article.href !== currentHref).map(
+    (article) => ({
+      href: article.href,
+      label: article.label,
+    }),
+  );
+
+  return dedupeGuideLinks([
+    { href: "/blog", label: "All guides" },
+    ...preferredLinks,
+    ...fallbackLinks,
+  ])
+    .filter((link) => link.href !== currentHref)
+    .slice(0, limit);
+}

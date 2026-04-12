@@ -1,25 +1,21 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Standard Bank Statement to Excel",
   description:
     "Convert a Standard Bank statement to Excel with a clean preview, structured export, and accountant-friendly workflow.",
+  path: "/standard-bank-statement-to-excel",
   keywords: [
     "Standard Bank statement to Excel",
     "convert Standard Bank statement to Excel",
     "Standard Bank bank statement to Excel",
     "Standard Bank statement converter",
   ],
-  openGraph: {
-    title: "Standard Bank Statement to Excel",
-    description:
-      "Upload a Standard Bank statement PDF, review the extracted transactions, and export Excel or CSV output.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const relatedLinks = [
   { href: "/bank-statements-to-excel", label: "Bank statements to Excel" },
@@ -156,6 +152,7 @@ const faqs = [
 export default function StandardBankStatementToExcelPage() {
   return (
     <SeoSupportPage
+      currentHref="/standard-bank-statement-to-excel"
       eyebrow="Standard Bank statement to Excel"
       title="Standard Bank Statement to Excel"
       intro="Need to convert a Standard Bank statement to Excel? Upload the statement PDF, review the extracted rows, and export a clean file for bookkeeping and reconciliations."

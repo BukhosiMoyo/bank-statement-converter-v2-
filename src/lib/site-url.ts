@@ -1,4 +1,29 @@
-const DEFAULT_SITE_URL = "http://localhost:3000";
+const PRIMARY_PRODUCTION_SITE_URL = "https://bankstatementconvertor.co.za";
+const DEVELOPMENT_SITE_URL = "http://localhost:3000";
+
+function normalizeSiteUrl(value: string) {
+  const normalizedValue = value.trim().replace(/\/$/, "");
+
+  if (normalizedValue.startsWith("http://") || normalizedValue.startsWith("https://")) {
+    return normalizedValue;
+  }
+
+  return `https://${normalizedValue}`;
+}
+
+function shouldUsePrimaryProductionSiteUrl(value: string) {
+  if (process.env.NODE_ENV !== "production") {
+    return false;
+  }
+
+  const hostname = new URL(value).hostname;
+
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".vercel.app")
+  );
+}
 
 export function getSiteUrl() {
   const rawValue =
@@ -6,12 +31,12 @@ export function getSiteUrl() {
     process.env.NEXT_PUBLIC_SITE_URL ??
     process.env.VERCEL_PROJECT_PRODUCTION_URL ??
     process.env.VERCEL_URL ??
-    DEFAULT_SITE_URL;
-  const normalizedValue = rawValue.trim().replace(/\/$/, "");
+    DEVELOPMENT_SITE_URL;
+  const normalizedValue = normalizeSiteUrl(rawValue);
 
-  if (normalizedValue.startsWith("http://") || normalizedValue.startsWith("https://")) {
-    return normalizedValue;
+  if (shouldUsePrimaryProductionSiteUrl(normalizedValue)) {
+    return PRIMARY_PRODUCTION_SITE_URL;
   }
 
-  return `https://${normalizedValue}`;
+  return normalizedValue;
 }

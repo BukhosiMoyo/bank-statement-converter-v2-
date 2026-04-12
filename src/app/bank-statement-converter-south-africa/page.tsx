@@ -1,25 +1,21 @@
 import type { Metadata } from "next";
 
 import { SeoSupportPage } from "@/components/seo-support-page";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Bank Statement Converter South Africa",
   description:
     "Bank statement converter South Africa firms can use for digital PDF statements, client projects, team workspaces, and Excel or CSV exports.",
+  path: "/bank-statement-converter-south-africa",
   keywords: [
     "bank statement converter South Africa",
     "South African bank statement converter",
     "bank statement converter for accountants in South Africa",
     "convert bank statements to excel South Africa",
   ],
-  openGraph: {
-    title: "Bank Statement Converter South Africa",
-    description:
-      "Built for South African accountants and firms handling digital bank statements, client projects, and shared team workflows.",
-    type: "article",
-    siteName: "Bank Statement Converter",
-  },
-};
+  type: "article",
+});
 
 const sections = [
   {
@@ -127,6 +123,7 @@ const faqs = [
 export default function BankStatementConverterSouthAfricaPage() {
   return (
     <SeoSupportPage
+      currentHref="/bank-statement-converter-south-africa"
       eyebrow="Bank statement converter South Africa"
       title="Bank Statement Converter South Africa"
       intro="Built for South African accountants and firms that need digital bank statements turned into clean Excel or CSV outputs, with projects and team workspaces for ongoing client work."

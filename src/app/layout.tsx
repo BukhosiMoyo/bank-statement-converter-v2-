@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Sora } from "next/font/google";
 
 import { SiteFooter } from "@/components/site-footer";
+import { BLOG_AUTHOR_NAME } from "@/lib/brand";
 import { getSiteUrl } from "@/lib/site-url";
 
 import "./globals.css";
@@ -25,6 +26,11 @@ export const metadata: Metadata = {
   },
   description:
     "Convert bank statement PDFs into clean CSV and XLSX working files.",
+  authors: [{ name: BLOG_AUTHOR_NAME }],
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({

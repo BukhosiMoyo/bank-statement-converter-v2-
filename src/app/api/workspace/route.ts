@@ -25,16 +25,12 @@ function buildRedirect(request: Request, path: string) {
   return NextResponse.redirect(new URL(path, request.url), 303);
 }
 
-export async function POST(request: Request) {
-  const currentUser = await getCurrentUser();
-
-  if (!currentUser) {
-    return buildRedirect(request, "/login?next=%2Fdashboard");
-  }
-
-  const formData = await request.formData();
-  const requestedWorkspaceId = String(formData.get("workspaceId") ?? "personal").trim();
-  const requestedReturnTo = String(formData.get("returnTo") ?? "").trim();
+function resolveWorkspaceRedirect(
+  request: Request,
+  currentUser: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>,
+  requestedWorkspaceId: string,
+  requestedReturnTo: string,
+) {
   const returnTo = resolveReturnTo(request, requestedReturnTo);
   const nextWorkspaceId =
     requestedWorkspaceId === "personal"
@@ -60,4 +56,42 @@ export async function POST(request: Request) {
   );
 
   return response;
+}
+
+export async function GET(request: Request) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return buildRedirect(request, "/login?next=%2Fdashboard");
+  }
+
+  const { searchParams } = new URL(request.url);
+  const requestedWorkspaceId = searchParams.get("workspaceId")?.trim() || "personal";
+  const requestedReturnTo = searchParams.get("returnTo")?.trim() || "";
+
+  return resolveWorkspaceRedirect(
+    request,
+    currentUser,
+    requestedWorkspaceId,
+    requestedReturnTo,
+  );
+}
+
+export async function POST(request: Request) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return buildRedirect(request, "/login?next=%2Fdashboard");
+  }
+
+  const formData = await request.formData();
+  const requestedWorkspaceId = String(formData.get("workspaceId") ?? "personal").trim();
+  const requestedReturnTo = String(formData.get("returnTo") ?? "").trim();
+
+  return resolveWorkspaceRedirect(
+    request,
+    currentUser,
+    requestedWorkspaceId,
+    requestedReturnTo,
+  );
 }
