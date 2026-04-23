@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   changeWorkspacePlan,
   createWorkspacePaymentRequest,
+  getPaymentsEnabled,
   getWorkspaceScope,
 } from "@/lib/app-data";
 import { getCurrentUser } from "@/lib/auth";
@@ -32,7 +33,13 @@ export async function POST(request: Request) {
   const workspace = getWorkspaceScope(currentUser);
 
   try {
+    const paymentsEnabled = await getPaymentsEnabled();
+
     if (creditBundleId) {
+      if (!paymentsEnabled) {
+        throw new Error("Payments are currently disabled. The platform is free to use.");
+      }
+
       if (!isCreditBundleId(creditBundleId)) {
         throw new Error("Credit bundle not found.");
       }
@@ -66,6 +73,10 @@ export async function POST(request: Request) {
     if (plan.monthlyAmountMinor === 0) {
       await changeWorkspacePlan(workspace, planId);
       return buildRedirect(request, `${returnTo}?saved=1`);
+    }
+
+    if (!paymentsEnabled) {
+      throw new Error("Payments are currently disabled. The platform is free to use.");
     }
 
     const paymentRequest = await createWorkspacePaymentRequest({

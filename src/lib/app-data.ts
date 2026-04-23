@@ -1510,6 +1510,20 @@ export async function ensureAppTables() {
         ALTER TABLE user_referrals
         ALTER COLUMN updated_at SET DEFAULT now()
       `);
+
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS platform_settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `);
+
+      await pool.query(`
+        INSERT INTO platform_settings (key, value, updated_at)
+        VALUES ('payments_enabled', 'true', now())
+        ON CONFLICT (key) DO NOTHING
+      `);
       } catch (error) {
         global.__bankStatementConverterAppTablesPromise = undefined;
         throw error;
@@ -1518,6 +1532,34 @@ export async function ensureAppTables() {
   }
 
   return global.__bankStatementConverterAppTablesPromise;
+}
+
+export async function getPaymentsEnabled(): Promise<boolean> {
+  await ensureAppTables();
+  const pool = getDatabasePool();
+  const result = await pool.query<{ value: string }>(
+    `SELECT value FROM platform_settings WHERE key = 'payments_enabled' LIMIT 1`,
+  );
+
+  if (result.rows.length === 0) {
+    return true;
+  }
+
+  return result.rows[0].value !== 'false';
+}
+
+export async function setPaymentsEnabled(enabled: boolean): Promise<void> {
+  await ensureAppTables();
+  const pool = getDatabasePool();
+  await pool.query(
+    `
+      INSERT INTO platform_settings (key, value, updated_at)
+      VALUES ('payments_enabled', $1, now())
+      ON CONFLICT (key)
+      DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+    `,
+    [enabled ? 'true' : 'false'],
+  );
 }
 
 async function createDefaultSubscription(
@@ -2955,12 +2997,33 @@ export async function changeOrganizationPlan(
   }
 }
 
-export async function getWorkspacePlanSummary(workspace: WorkspaceScope) {
-  if (workspace.type === "organization") {
-    return getOrganizationPlanSummary(workspace.organizationId);
+export async function getWorkspacePlanSummary(
+  workspace: WorkspaceScope,
+  options?: { paymentsEnabled?: boolean },
+) {
+  const summary =
+    workspace.type === "organization"
+      ? await getOrganizationPlanSummary(workspace.organizationId)
+      : await getUserPlanSummary(workspace.userId);
+
+  const paymentsEnabled = options?.paymentsEnabled ?? (await getPaymentsEnabled());
+
+  if (!paymentsEnabled) {
+    return {
+      ...summary,
+      usage: {
+        ...summary.usage,
+        nearLimit: false,
+        limitReached: false,
+        usingCredits: false,
+        usageSource: "subscription" as const,
+        warningMessage: null,
+        limitMessage: null,
+      },
+    };
   }
 
-  return getUserPlanSummary(workspace.userId);
+  return summary;
 }
 
 export async function changeWorkspacePlan(

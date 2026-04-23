@@ -3104,6 +3104,749 @@ const articles: BlogArticleContent[] = [
       },
     ],
   },
+  {
+    slug: "export-fnb-statement-to-csv",
+    title: "How to Export an FNB Statement to CSV",
+    description:
+      "A step-by-step guide to exporting FNB bank statement data as CSV for bookkeeping, reconciliation, and accounting software import.",
+    keywords: [
+      "how to export fnb statement to csv",
+      "fnb statement csv download",
+      "fnb bank statement csv export",
+      "download fnb statement in csv format",
+    ],
+    eyebrow: "Export FNB statement to CSV",
+    intro:
+      "FNB does not always make CSV export straightforward from online banking. A practical workaround is to download the digital PDF statement and convert it to CSV using a review-first workflow.",
+    shortAnswer:
+      "Download the FNB statement as a digital PDF, upload it to the converter, review the extracted rows, and export as CSV.",
+    ctaTitle: "Export FNB statements as clean CSV",
+    ctaBody:
+      "Use the converter to turn FNB bank statement PDFs into structured CSV for bookkeeping and reconciliation.",
+    sections: [
+      {
+        eyebrow: "Workflow",
+        title: "How to get a CSV from an FNB bank statement",
+        intro:
+          "The fastest path from FNB statement to CSV goes through a digital PDF conversion with a review step in between.",
+        cards: [
+          {
+            label: "Step 01",
+            title: "Download the FNB statement as PDF",
+            body: "Log into FNB online banking, download the statement for the period you need, and save it as a digital PDF.",
+          },
+          {
+            label: "Step 02",
+            title: "Upload and review",
+            body: "Upload the PDF into the converter and review the parsed transaction rows. Check dates, descriptions, and amounts.",
+          },
+          {
+            label: "Step 03",
+            title: "Export as CSV",
+            body: "Download the CSV file once the preview looks clean. The structured output is ready for bookkeeping or accounting software import.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Why PDF to CSV",
+        title: "Why converting the PDF is often easier than finding a native CSV",
+        intro:
+          "FNB online banking may offer statement downloads in various formats, but the CSV options are not always available or structured the way accountants need.",
+        cards: [
+          {
+            title: "PDF is always available",
+            body: "Every FNB account can download a digital PDF statement. This makes PDF-to-CSV conversion a reliable fallback.",
+          },
+          {
+            title: "Structured preview before export",
+            body: "Converting through a review-first tool lets you confirm the data quality before the CSV reaches your accounting workflow.",
+          },
+          {
+            title: "Consistent format across periods",
+            body: "The converter produces consistent CSV output regardless of which FNB statement period or account type you are working with.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Use cases",
+        title: "What accountants do with FNB CSV exports",
+        intro:
+          "FNB CSV exports are typically used in downstream accounting workflows that need structured transaction data.",
+        cards: [
+          {
+            title: "Import into accounting software",
+            body: "CSV is the most common format for importing bank transactions into Sage, Xero, QuickBooks, and other accounting tools.",
+          },
+          {
+            title: "Bank reconciliation",
+            body: "Structured CSV makes it easier to match FNB transactions against ledger entries during monthly reconciliation.",
+          },
+          {
+            title: "Spreadsheet analysis",
+            body: "Some accountants prefer CSV for lighter data processing, filtering, and cleanup before moving data into workbooks.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "How do I export an FNB bank statement as CSV?",
+        answer:
+          "Download the digital PDF from FNB online banking, upload it to the converter, review the rows, and export as CSV.",
+      },
+      {
+        question: "Does FNB offer direct CSV download?",
+        answer:
+          "FNB's online banking may offer limited export options. Converting the PDF is a reliable alternative that works for every account type.",
+      },
+      {
+        question: "Can I use the FNB CSV for Sage import?",
+        answer:
+          "Yes. The CSV output is structured and suitable for import into Sage, Xero, QuickBooks, and other accounting software.",
+      },
+      {
+        question: "Does this work for FNB business accounts?",
+        answer:
+          "Yes. Both personal and business FNB statement PDFs can be converted to CSV using the same workflow.",
+      },
+    ],
+  },
+  {
+    slug: "fix-messy-bank-statement-csv",
+    title: "How to Fix a Messy Bank Statement CSV",
+    description:
+      "Practical steps for fixing messy or poorly structured bank statement CSV files, including common issues and how a review-first conversion workflow prevents them.",
+    keywords: [
+      "fix messy bank statement csv",
+      "bank statement csv cleanup",
+      "messy csv from bank statement",
+      "fix bank statement export",
+    ],
+    eyebrow: "Fix messy bank statement CSV",
+    intro:
+      "A messy CSV usually means the conversion or export step did not include a proper review. The best fix is often to re-convert the statement using a tool that lets you inspect the data before export.",
+    shortAnswer:
+      "Re-convert the original bank statement PDF using a review-first workflow. Inspect the rows before exporting CSV so the output starts clean instead of needing manual repair.",
+    ctaTitle: "Get a cleaner CSV from the start",
+    ctaBody:
+      "Use the converter to produce reviewed, structured CSV instead of fixing messy exports after the fact.",
+    sections: [
+      {
+        eyebrow: "Common problems",
+        title: "What makes a bank statement CSV messy",
+        intro:
+          "Most messy CSV files share a few common problems that come from poor conversion, missing review, or wrong export settings.",
+        cards: [
+          {
+            title: "Merged or shifted columns",
+            body: "Transaction descriptions bleed into amount columns, or dates and references get combined into a single field.",
+          },
+          {
+            title: "Missing or duplicated rows",
+            body: "Some transactions are dropped during conversion, or header rows appear in the middle of the data.",
+          },
+          {
+            title: "Inconsistent formatting",
+            body: "Date formats change mid-file, amounts use mixed separators, or empty rows break the tabular structure.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Prevention",
+        title: "How to prevent messy CSV in the first place",
+        intro:
+          "The best approach is prevention through a review-first conversion workflow rather than fixing problems after export.",
+        cards: [
+          {
+            title: "Start with digital PDFs",
+            body: "Digital, text-based PDFs produce far cleaner extraction than scanned or image-only statements.",
+          },
+          {
+            title: "Review the preview before export",
+            body: "The preview step catches column issues, missing rows, and formatting problems before they end up in your CSV.",
+          },
+          {
+            title: "Use a purpose-built converter",
+            body: "Generic PDF-to-text tools often produce messy output because they do not understand bank statement structure.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Fixing existing files",
+        title: "How to fix a CSV that is already messy",
+        intro:
+          "If you already have a messy CSV, here are practical steps to recover.",
+        cards: [
+          {
+            title: "Re-convert from the original PDF",
+            body: "If you still have the source PDF, re-convert it using a bank statement converter with a preview step. This is usually faster than manual cleanup.",
+          },
+          {
+            title: "Check column alignment in a spreadsheet",
+            body: "Open the CSV in Excel or Google Sheets and check whether each column contains the right type of data.",
+          },
+          {
+            title: "Remove header and footer noise",
+            body: "Bank statement CSV files sometimes include page headers, footers, or summary rows that need to be removed before import.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Why is my bank statement CSV messy?",
+        answer:
+          "Usually because the conversion tool did not understand the bank statement layout, or the export happened without a review step.",
+      },
+      {
+        question: "Can I fix a messy CSV without the original PDF?",
+        answer:
+          "You can try manual cleanup in a spreadsheet, but re-converting from the original PDF is usually faster and more reliable.",
+      },
+      {
+        question: "How do I prevent messy CSV exports?",
+        answer:
+          "Use a bank statement converter with a preview step so you can inspect the data before exporting. Start with digital PDFs whenever possible.",
+      },
+      {
+        question: "Which banks produce the cleanest CSV exports?",
+        answer:
+          "FNB, Standard Bank, and Capitec digital PDFs currently produce the cleanest structured output.",
+      },
+    ],
+  },
+  {
+    slug: "convert-locked-pdf-bank-statement",
+    title: "How to Convert a Locked PDF Bank Statement to Excel",
+    description:
+      "What to do when your bank statement PDF is password-protected or locked, and how to convert it to Excel or CSV once access is resolved.",
+    keywords: [
+      "convert locked pdf bank statement to excel",
+      "locked bank statement pdf",
+      "password protected bank statement",
+      "open locked pdf bank statement",
+    ],
+    eyebrow: "Convert locked PDF bank statement",
+    intro:
+      "Some banks protect statement PDFs with passwords or encryption. You need to resolve the access restriction before the converter can read the transaction text inside.",
+    shortAnswer:
+      "Remove the password protection first using the password provided by your bank, then upload the unlocked PDF to the converter for extraction and review.",
+    ctaTitle: "Convert bank statements once the PDF is unlocked",
+    ctaBody:
+      "After removing password protection, upload the digital PDF and use the review-first workflow for clean Excel or CSV export.",
+    sections: [
+      {
+        eyebrow: "Understanding",
+        title: "Why bank statement PDFs are sometimes locked",
+        intro:
+          "Banks lock statement PDFs for security reasons. The password is typically your ID number, account number, or a combination set during download.",
+        cards: [
+          {
+            title: "Password protection from the bank",
+            body: "Many South African banks set a default password on downloaded statements, often using the account holder's ID number or date of birth.",
+          },
+          {
+            title: "Encryption prevents text access",
+            body: "A locked PDF encrypts the content so tools cannot read the transaction text until the correct password is provided.",
+          },
+          {
+            title: "This is not a converter limitation",
+            body: "The lock is on the PDF file itself. Any conversion tool needs the file to be unlocked before it can extract data.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Solution",
+        title: "How to unlock and convert the statement",
+        intro:
+          "The process is straightforward once you know where to find the password.",
+        cards: [
+          {
+            label: "Step 01",
+            title: "Find the password",
+            body: "Check the bank's download instructions. The password is usually your ID number, account number, or a value shown during the download process.",
+          },
+          {
+            label: "Step 02",
+            title: "Open and save an unlocked copy",
+            body: "Open the PDF with the password in your PDF reader, then save or print-to-PDF to create an unlocked copy.",
+          },
+          {
+            label: "Step 03",
+            title: "Upload the unlocked PDF to the converter",
+            body: "Upload the unlocked file, review the extracted rows, and export as Excel or CSV.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Bank-specific passwords",
+        title: "Common password formats by South African bank",
+        intro:
+          "Different banks use different default password schemes for statement PDFs.",
+        cards: [
+          {
+            title: "FNB",
+            body: "FNB statement passwords are often the account holder's South African ID number.",
+          },
+          {
+            title: "Standard Bank",
+            body: "Standard Bank typically uses the ID number as the PDF password for personal account statements.",
+          },
+          {
+            title: "ABSA, Nedbank, and Capitec",
+            body: "Password formats vary. Check the bank's statement download page for instructions on the specific password used.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Can the converter open a locked PDF bank statement?",
+        answer:
+          "No. You need to unlock the PDF first using the password from your bank, then upload the unlocked file for conversion.",
+      },
+      {
+        question: "Where do I find the password for my bank statement PDF?",
+        answer:
+          "The password is typically your South African ID number, account number, or a value shown by the bank during the download process.",
+      },
+      {
+        question: "How do I save an unlocked copy of the PDF?",
+        answer:
+          "Open the locked PDF with the correct password in your PDF reader, then use 'Save As' or 'Print to PDF' to create an unlocked copy.",
+      },
+      {
+        question: "Will the conversion quality be affected?",
+        answer:
+          "No. Once unlocked, the PDF contains the same digital text. Conversion quality depends on whether the source PDF is digital or scanned.",
+      },
+    ],
+  },
+  {
+    slug: "convert-multiple-months-bank-statements",
+    title: "How to Convert 3 or 6 Months of Bank Statements to Excel",
+    description:
+      "A practical workflow for converting several months of bank statements at once, keeping each period organized and reviewed before export.",
+    keywords: [
+      "convert 6 months bank statement to excel",
+      "convert 3 months bank statement to csv",
+      "multiple months bank statements",
+      "bulk bank statement conversion",
+    ],
+    eyebrow: "Convert multiple months of bank statements",
+    intro:
+      "Whether you need 3, 6, or 12 months of statements converted, the key is maintaining review quality across every file while keeping the output organized by period.",
+    shortAnswer:
+      "Upload each month's statement PDF separately, review each preview individually, and save the conversions into a client project to keep the multi-month work organized.",
+    ctaTitle: "Convert multiple months of statements efficiently",
+    ctaBody:
+      "Use batch uploads and project organization to process several months of bank statements while keeping each period reviewed and trackable.",
+    sections: [
+      {
+        eyebrow: "Workflow",
+        title: "How to convert multiple months of bank statements",
+        intro:
+          "The workflow stays the same whether you are converting 3 months or 12 months. The key is keeping each statement reviewable and organized.",
+        cards: [
+          {
+            label: "Step 01",
+            title: "Collect all statement PDFs",
+            body: "Download digital PDFs for each month from online banking. Keep them organized by date before uploading.",
+          },
+          {
+            label: "Step 02",
+            title: "Upload and review each month",
+            body: "Upload the statements together using batch upload, then review each month's preview individually before exporting.",
+          },
+          {
+            label: "Step 03",
+            title: "Export and organize",
+            body: "Export each month as Excel or CSV and save the conversions into a client project for tracking.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Organization",
+        title: "Keeping multi-month work organized",
+        intro:
+          "The biggest risk in multi-month conversion is mixing up periods or losing track of which files have been reviewed.",
+        cards: [
+          {
+            title: "Use client projects",
+            body: "Save all converted months into the same client project so the full period stays grouped together.",
+          },
+          {
+            title: "Review each month separately",
+            body: "Do not skip review on any individual month. Each period may have different transaction patterns or extraction quality.",
+          },
+          {
+            title: "Export consistently",
+            body: "Use the same export format (Excel or CSV) across all months for consistency in the downstream workflow.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Use cases",
+        title: "When multi-month conversion is needed",
+        intro:
+          "Common scenarios where accountants need several months of statements converted at once.",
+        cards: [
+          {
+            title: "New client onboarding",
+            body: "When taking on a new bookkeeping client, you often need to convert 3-6 months of historical statements to catch up.",
+          },
+          {
+            title: "Tax preparation",
+            body: "Tax season may require a full year of bank statements converted and organized for supporting documentation.",
+          },
+          {
+            title: "Audit and compliance",
+            body: "Auditors or compliance teams may request multiple months of structured bank data for review purposes.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Can I convert 6 months of bank statements at once?",
+        answer:
+          "Yes. Upload each month's PDF using batch upload, review each preview individually, and export all months as Excel or CSV.",
+      },
+      {
+        question: "Should I review each month separately?",
+        answer:
+          "Yes. Each month may have different extraction quality, and reviewing individually catches issues that batch processing might hide.",
+      },
+      {
+        question: "How do I keep multi-month work organized?",
+        answer:
+          "Save all converted months into the same client project so the full period stays tracked together.",
+      },
+      {
+        question: "Does this work for any bank?",
+        answer:
+          "Yes. The workflow is the same for FNB, Standard Bank, ABSA, Capitec, Nedbank, and other supported banks.",
+      },
+    ],
+  },
+  {
+    slug: "stop-manually-typing-bank-statements",
+    title: "Stop Manually Typing Bank Statements Into Excel",
+    description:
+      "Why manual bank statement data entry is unnecessary and how a review-first conversion workflow eliminates retyping while keeping data quality high.",
+    keywords: [
+      "stop manually typing bank statements excel",
+      "bank statement manual data entry",
+      "stop retyping bank statements",
+      "automate bank statement data capture",
+    ],
+    eyebrow: "Stop manually typing bank statements",
+    intro:
+      "If your team is still manually typing bank statement transactions into Excel, that time and effort can be recovered. A review-first conversion workflow eliminates retyping while giving you better control over data quality.",
+    shortAnswer:
+      "Upload the bank statement PDF, let the converter extract the rows automatically, review the preview, and export Excel or CSV — no manual typing needed.",
+    ctaTitle: "Replace manual typing with reviewed conversion",
+    ctaBody:
+      "Upload bank statement PDFs and export clean Excel files instead of retyping every transaction row by hand.",
+    sections: [
+      {
+        eyebrow: "The problem",
+        title: "Why manual typing is still common",
+        intro:
+          "Many accounting teams continue to type bank statement data manually because they have not found a conversion tool they trust — or they do not know one exists.",
+        cards: [
+          {
+            title: "Habit and familiarity",
+            body: "Teams that have always typed statements manually may not realize how much time a converter saves, even with a review step.",
+          },
+          {
+            title: "Trust issues with automated tools",
+            body: "Some accountants tried generic PDF converters that produced messy output, and went back to manual entry as a result.",
+          },
+          {
+            title: "Volume makes it painful",
+            body: "Manual typing becomes increasingly unsustainable as client count and statement volume grow.",
+          },
+        ],
+      },
+      {
+        eyebrow: "The alternative",
+        title: "How conversion replaces manual typing",
+        intro:
+          "A review-first converter extracts the data automatically but still gives you full control through the preview step.",
+        cards: [
+          {
+            label: "Step 01",
+            title: "Upload instead of open and type",
+            body: "Upload the digital PDF statement to the converter instead of opening it in a PDF reader and typing into Excel.",
+          },
+          {
+            label: "Step 02",
+            title: "Review instead of retype",
+            body: "Check the automatically extracted rows in the preview. This takes minutes instead of the hours manual typing requires.",
+          },
+          {
+            label: "Step 03",
+            title: "Export a clean file",
+            body: "Download Excel or CSV that you would have spent hours creating manually. The data is structured and ready to use.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Impact",
+        title: "What your team gains by switching",
+        intro:
+          "The impact of switching from manual typing to conversion is immediate and compounds over time.",
+        cards: [
+          {
+            title: "Hours saved every month",
+            body: "Each statement that takes 30-60 minutes to type manually can be converted and reviewed in under 5 minutes.",
+          },
+          {
+            title: "Fewer data entry errors",
+            body: "Automated extraction eliminates the typos, transposition errors, and missed rows that manual data entry introduces.",
+          },
+          {
+            title: "Team capacity for higher-value work",
+            body: "Time recovered from manual typing can be spent on analysis, client advisory, and actual accounting work.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "How much time does this save compared to manual typing?",
+        answer:
+          "Most statements that take 30-60 minutes to type manually can be converted and reviewed in under 5 minutes.",
+      },
+      {
+        question: "Is the automated extraction accurate enough?",
+        answer:
+          "For digital PDFs from supported banks like FNB, Standard Bank, and Capitec, accuracy is high. The preview step lets you confirm before export.",
+      },
+      {
+        question: "What if my team does not trust automated tools?",
+        answer:
+          "The review step is specifically designed for this concern. You inspect every row before exporting, so you are never blindly trusting the output.",
+      },
+      {
+        question: "Can I still make corrections before export?",
+        answer:
+          "The preview lets you identify issues before downloading. For corrections, export to Excel and make adjustments in the spreadsheet.",
+      },
+    ],
+  },
+  {
+    slug: "csv-format-for-accounting-software",
+    title: "CSV Format for Accounting Software — What You Need to Know",
+    description:
+      "What CSV format accounting software like Sage, Xero, and QuickBooks expects for bank statement import, and how to prepare bank statement CSV files correctly.",
+    keywords: [
+      "csv format for accounting software",
+      "accounting software bank statement format",
+      "bank statement csv import format",
+      "what format do i need to import bank statements",
+    ],
+    eyebrow: "CSV format for accounting software",
+    intro:
+      "Different accounting software products expect different CSV formats for bank statement import. Understanding these requirements before exporting helps you avoid import errors and manual corrections.",
+    shortAnswer:
+      "Most accounting software expects columns for date, description, and amount. Some require separate debit and credit columns. The converter produces structured CSV that can be mapped during the import step.",
+    ctaTitle: "Export bank statement CSV ready for accounting software",
+    ctaBody:
+      "Convert bank statement PDFs to structured CSV that is ready for import into Sage, Xero, QuickBooks, and other accounting tools.",
+    sections: [
+      {
+        eyebrow: "Basics",
+        title: "What accounting software expects from bank statement CSV",
+        intro:
+          "While each product has specific requirements, most accounting software needs a few core columns to import bank transactions.",
+        cards: [
+          {
+            title: "Date column",
+            body: "A consistent date format is essential. Most software accepts YYYY-MM-DD or DD/MM/YYYY, but check your specific product's requirements.",
+          },
+          {
+            title: "Description or payee column",
+            body: "This contains the transaction narrative — the text that helps categorize and identify each transaction after import.",
+          },
+          {
+            title: "Amount column(s)",
+            body: "Some software expects a single amount column (positive for income, negative for expenses), while others want separate debit and credit columns.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Software-specific",
+        title: "CSV requirements by accounting software",
+        intro:
+          "Each major accounting product has slightly different CSV import expectations.",
+        cards: [
+          {
+            title: "Sage Business Cloud",
+            body: "Sage typically expects date, description, and amount columns. Column mapping is done during the import process inside Sage.",
+          },
+          {
+            title: "Xero",
+            body: "Xero accepts CSV with date, description, and amount fields. The import wizard lets you map columns to Xero's expected structure.",
+          },
+          {
+            title: "QuickBooks",
+            body: "QuickBooks Online supports CSV import through the Banking section. It expects date, description, and amount at minimum.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Preparation",
+        title: "How to prepare bank statement CSV for import",
+        intro:
+          "Good preparation starts with the conversion step and ends with a quick format check before import.",
+        cards: [
+          {
+            title: "Convert with a preview step",
+            body: "Using a converter with a preview ensures the CSV starts from reviewed data rather than blind extraction.",
+          },
+          {
+            title: "Check column structure",
+            body: "Open the CSV before import and confirm that each column contains the right type of data (date, description, amount).",
+          },
+          {
+            title: "Match your software's expectations",
+            body: "If your accounting software needs specific column names or date formats, make adjustments before importing.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "What CSV format does accounting software need?",
+        answer:
+          "Most accounting software needs columns for date, description, and amount. Specific requirements vary by product.",
+      },
+      {
+        question: "Does the converter produce CSV ready for accounting software?",
+        answer:
+          "The converter produces structured CSV with date, description, and amount columns that can be mapped during import into Sage, Xero, or QuickBooks.",
+      },
+      {
+        question: "Do I need to reformat the CSV before import?",
+        answer:
+          "Usually no. Most accounting software has an import wizard that lets you map columns. Minor adjustments may be needed for date formats.",
+      },
+      {
+        question: "Can I use the same CSV for different accounting software?",
+        answer:
+          "The core data is the same, but column mapping may differ. Each product's import wizard handles the mapping step.",
+      },
+    ],
+  },
+  {
+    slug: "bank-feed-alternative-south-africa",
+    title: "Bank Feed Alternative for South Africa",
+    description:
+      "What to do when direct bank feeds are not available for your South African bank account, and how PDF-to-CSV conversion provides a practical alternative.",
+    keywords: [
+      "bank feed alternative south africa",
+      "no bank feed south africa",
+      "bank feed replacement",
+      "manual bank statement import alternative",
+    ],
+    eyebrow: "Bank feed alternative for South Africa",
+    intro:
+      "Direct bank feeds are the ideal way to get transaction data into accounting software, but they are not always available for South African bank accounts. PDF-to-CSV conversion fills this gap.",
+    shortAnswer:
+      "When bank feeds are unavailable, convert your bank statement PDF to CSV and import it into your accounting software. This is faster than manual entry and gives you structured data similar to what a bank feed would provide.",
+    ctaTitle: "Use PDF conversion as your bank feed alternative",
+    ctaBody:
+      "Convert bank statement PDFs to structured CSV when direct bank feeds are not available for your South African bank account.",
+    sections: [
+      {
+        eyebrow: "The problem",
+        title: "Why bank feeds are not always available in South Africa",
+        intro:
+          "Despite the growth of cloud accounting, many South African bank accounts still lack reliable direct bank feed connections.",
+        cards: [
+          {
+            title: "Business accounts with limited connectivity",
+            body: "Many business bank accounts, especially at smaller banks, do not support direct bank feeds to accounting software.",
+          },
+          {
+            title: "Unreliable or delayed feeds",
+            body: "Some bank feeds exist but are unreliable, with delays, missing transactions, or frequent disconnections.",
+          },
+          {
+            title: "New or niche banks",
+            body: "Newer banks like TymeBank and Discovery Bank may not have established feed connections with all accounting platforms.",
+          },
+        ],
+      },
+      {
+        eyebrow: "The alternative",
+        title: "How PDF-to-CSV conversion replaces bank feeds",
+        intro:
+          "When direct feeds are not available, converting PDF statements to CSV recovers most of the automation benefit.",
+        cards: [
+          {
+            label: "Step 01",
+            title: "Download the bank statement PDF",
+            body: "Download the digital PDF from your bank's online banking portal. This is available for virtually every South African bank account.",
+          },
+          {
+            label: "Step 02",
+            title: "Convert and review",
+            body: "Upload the PDF to the converter, review the extracted transactions, and confirm the data looks correct.",
+          },
+          {
+            label: "Step 03",
+            title: "Import CSV into your accounting software",
+            body: "Export as CSV and import into Sage, Xero, QuickBooks, or your preferred accounting tool.",
+          },
+        ],
+      },
+      {
+        eyebrow: "Comparison",
+        title: "Bank feeds vs PDF conversion",
+        intro:
+          "Understanding the trade-offs helps you decide when PDF conversion is a practical substitute.",
+        cards: [
+          {
+            title: "Automation level",
+            body: "Bank feeds are fully automatic. PDF conversion requires a manual download and upload step, but the extraction itself is automated.",
+          },
+          {
+            title: "Data quality",
+            body: "Both approaches provide structured transaction data. PDF conversion includes a review step that bank feeds lack.",
+          },
+          {
+            title: "Availability",
+            body: "PDF download is available for every bank account. Bank feeds depend on the bank and accounting software having an active integration.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "What can I use instead of bank feeds in South Africa?",
+        answer:
+          "Convert your bank statement PDF to CSV and import it into your accounting software. This is the most practical alternative when direct feeds are unavailable.",
+      },
+      {
+        question: "Is PDF conversion as good as a bank feed?",
+        answer:
+          "Bank feeds are more automated, but PDF conversion provides similar structured data and includes a review step that feeds do not.",
+      },
+      {
+        question: "Which accounting software can I import CSV into?",
+        answer:
+          "Most accounting software including Sage, Xero, and QuickBooks support CSV bank transaction import.",
+      },
+      {
+        question: "Does this work for all South African banks?",
+        answer:
+          "Yes. Digital PDF statements from FNB, Standard Bank, ABSA, Capitec, Nedbank, and other banks can all be converted to CSV.",
+      },
+    ],
+  },
 ];
 
 export const DYNAMIC_BLOG_ARTICLES = articles.map((article) => ({

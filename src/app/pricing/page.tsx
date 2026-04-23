@@ -6,6 +6,7 @@ import { listCreditBundles } from "@/lib/billing";
 import { getCurrentUser } from "@/lib/auth";
 import {
   canManageWorkspacePlan,
+  getPaymentsEnabled,
   getWorkspacePendingPaymentRequest,
   getWorkspacePlanSummary,
   getWorkspaceScope,
@@ -50,6 +51,7 @@ export default async function PricingPage({
   const plans = listPlanDefinitions();
   const creditBundles = listCreditBundles();
   const canManagePlan = workspace ? canManageWorkspacePlan(workspace) : false;
+  const paymentsEnabled = await getPaymentsEnabled();
 
   return (
     <main className="pb-16">
@@ -74,6 +76,16 @@ export default async function PricingPage({
             <p className="mt-4 text-sm text-[var(--muted)]">
               {currentUser.activeWorkspace.name}
             </p>
+          ) : null}
+          {!paymentsEnabled ? (
+            <div className="mt-6 rounded-[1.7rem] border border-[rgba(22,106,91,0.18)] bg-[rgba(22,106,91,0.07)] px-5 py-4">
+              <p className="text-sm font-medium text-[var(--accent)]">
+                This platform is currently free to use.
+              </p>
+              <p className="mt-1 text-sm text-[var(--muted)]">
+                No plan upgrades or credit purchases are required. All features are available at no cost.
+              </p>
+            </div>
           ) : null}
         </div>
 
@@ -110,8 +122,8 @@ export default async function PricingPage({
                   ) : null}
                 </div>
                 <p className="mt-6 text-5xl font-semibold tracking-tight text-[var(--foreground)]">
-                  {plan.price}
-                  {plan.interval ? (
+                  {paymentsEnabled ? plan.price : "Free"}
+                  {paymentsEnabled && plan.interval ? (
                     <span className="text-base font-medium text-[var(--muted)]">
                       {plan.interval}
                     </span>
@@ -153,7 +165,7 @@ export default async function PricingPage({
                       <input name="returnTo" type="hidden" value="/pricing" />
                       <button
                         className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[var(--line)] bg-white/70 px-6 text-sm font-medium text-[var(--foreground)] disabled:cursor-not-allowed disabled:opacity-55"
-                        disabled={isCurrentPlan || !canManagePlan}
+                        disabled={isCurrentPlan || !canManagePlan || (!paymentsEnabled && plan.monthlyAmountMinor !== null && plan.monthlyAmountMinor > 0)}
                         type="submit"
                       >
                         {isCurrentPlan
@@ -231,7 +243,7 @@ export default async function PricingPage({
                         <input name="returnTo" type="hidden" value="/pricing" />
                         <button
                           className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[var(--line)] bg-white/70 px-6 text-sm font-medium text-[var(--foreground)] disabled:cursor-not-allowed disabled:opacity-55"
-                          disabled={!canManagePlan}
+                          disabled={!canManagePlan || !paymentsEnabled}
                           type="submit"
                         >
                           {isPendingBundle

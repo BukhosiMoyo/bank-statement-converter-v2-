@@ -73,10 +73,82 @@ export const BLOG_ARTICLES: PublicArticleLink[] = [
       "A Capitec-specific guide for reviewing and exporting transaction rows.",
   },
   {
+    href: "/absa-bank-statement-to-excel",
+    label: "ABSA Bank Statement to Excel",
+    description:
+      "Convert ABSA bank statement PDFs into structured Excel or CSV exports for accounting workflows.",
+  },
+  {
+    href: "/nedbank-bank-statement-to-excel",
+    label: "Nedbank Bank Statement to Excel",
+    description:
+      "Convert Nedbank bank statement PDFs into clean Excel or CSV files for bookkeeping and reconciliation.",
+  },
+  {
+    href: "/bank-statement-to-sage",
+    label: "Import Bank Statement to Sage",
+    description:
+      "Prepare bank statement CSV exports for Sage accounting software import.",
+  },
+  {
+    href: "/bank-statement-to-xero",
+    label: "Import Bank Statement to Xero",
+    description:
+      "Prepare bank statement CSV exports for Xero accounting software import.",
+  },
+  {
+    href: "/bank-statement-to-quickbooks",
+    label: "Import Bank Statement to QuickBooks",
+    description:
+      "Prepare bank statement CSV exports for QuickBooks import.",
+  },
+  {
+    href: "/investec-bank-statement-to-excel",
+    label: "Investec Bank Statement to Excel",
+    description:
+      "Convert Investec bank statement PDFs into structured Excel or CSV exports.",
+  },
+  {
+    href: "/discovery-bank-statement-to-excel",
+    label: "Discovery Bank Statement to Excel",
+    description:
+      "Convert Discovery Bank statement PDFs into clean Excel or CSV files.",
+  },
+  {
+    href: "/tymebank-bank-statement-to-excel",
+    label: "TymeBank Bank Statement to Excel",
+    description:
+      "Convert TymeBank bank statement PDFs into structured Excel or CSV exports.",
+  },
+  {
+    href: "/african-bank-statement-to-excel",
+    label: "African Bank Statement to Excel",
+    description:
+      "Convert African Bank statement PDFs into clean Excel or CSV files.",
+  },
+  {
     href: "/can-you-convert-a-scanned-bank-statement-to-excel",
     label: "Can You Convert a Scanned Bank Statement to Excel?",
     description:
       "What works, what does not, and where scanned statements still need extra care.",
+  },
+  {
+    href: "/free-bank-statement-converter",
+    label: "Free Bank Statement Converter",
+    description:
+      "Convert bank statement PDFs to Excel and CSV for free with a review-first workflow.",
+  },
+  {
+    href: "/bank-statement-parser",
+    label: "Bank Statement Parser",
+    description:
+      "Parse bank statement PDFs and extract structured transaction data for accounting workflows.",
+  },
+  {
+    href: "/automate-bank-reconciliation-south-africa",
+    label: "Automate Bank Reconciliation South Africa",
+    description:
+      "Speed up bank reconciliation by automating the data capture step with PDF-to-CSV conversion.",
   },
   ...DYNAMIC_BLOG_ARTICLE_LINKS,
 ];

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import {
+  getPaymentsEnabled,
   getWorkspacePlanSummary,
   getWorkspaceScope,
   saveWorkspaceConversion,
@@ -136,8 +137,9 @@ export async function POST(request: Request) {
 
   const bytes = new Uint8Array(await statement.arrayBuffer());
   const workspace = currentUser ? getWorkspaceScope(currentUser) : null;
+  const paymentsEnabled = await getPaymentsEnabled();
   const bypassUsageLimits =
-    currentUser !== null && isAdminEmail(currentUser.email);
+    !paymentsEnabled || (currentUser !== null && isAdminEmail(currentUser.email));
   const defaultProjectId =
     currentUser && workspace?.type === "personal"
       ? currentUser.settings.defaultProjectId

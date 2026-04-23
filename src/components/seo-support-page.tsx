@@ -161,6 +161,42 @@ export function SeoSupportPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
 
+      {/* Visible breadcrumb navigation */}
+      <nav
+        aria-label="Breadcrumb"
+        className={`mx-auto w-full ${SITE_CONTAINER_CLASS} px-4 pt-4 sm:px-6 lg:px-8`}
+      >
+        <ol className="flex flex-wrap items-center gap-1.5 text-sm text-[var(--muted)]">
+          <li>
+            <Link
+              href="/"
+              className="hover:text-[var(--foreground)]"
+            >
+              Home
+            </Link>
+          </li>
+          {currentHref.startsWith("/blog/") ? (
+            <>
+              <li aria-hidden="true" className="select-none">/</li>
+              <li>
+                <Link
+                  href="/blog"
+                  className="hover:text-[var(--foreground)]"
+                >
+                  Blog
+                </Link>
+              </li>
+            </>
+          ) : null}
+          <li aria-hidden="true" className="select-none">/</li>
+          <li>
+            <span className="font-medium text-[var(--foreground)]">
+              {title}
+            </span>
+          </li>
+        </ol>
+      </nav>
+
       <section
         className={`mx-auto grid w-full ${SITE_CONTAINER_CLASS} gap-10 px-4 pb-12 pt-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:px-8 lg:pt-10`}
       >

@@ -6,6 +6,7 @@ import { listCreditBundles } from "@/lib/billing";
 import {
   canManageWorkspacePlan,
   getAdminOverview,
+  getPaymentsEnabled,
   getWorkspacePendingPaymentRequest,
   getWorkspacePlanSummary,
   getWorkspaceScope,
@@ -60,7 +61,7 @@ export default async function DashboardBillingPage({
       ) ?? null
     : null;
 
-  const [planSummary, pendingPayment, projects, adminOverview, paymentQueue] = await Promise.all([
+  const [planSummary, pendingPayment, projects, adminOverview, paymentQueue, paymentsEnabled] = await Promise.all([
     getWorkspacePlanSummary(workspace),
     getWorkspacePendingPaymentRequest(user.id, workspace),
     listWorkspaceProjects(user.id, workspace, 100),
@@ -71,6 +72,7 @@ export default async function DashboardBillingPage({
           limit: 6,
         })
       : Promise.resolve([]),
+    getPaymentsEnabled(),
   ]);
   const plans = listPlanDefinitions();
   const creditBundles = listCreditBundles();
@@ -197,90 +199,159 @@ export default async function DashboardBillingPage({
       ) : null}
 
       {showAdmin && adminOverview ? (
-        <section className="grid gap-4 xl:grid-cols-[1fr_0.95fr]">
+        <>
           <section className="panel rounded-[2rem] p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
-                  Revenue
+                  Platform settings
                 </p>
                 <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--foreground)]">
-                  Platform billing
+                  Payments
                 </h2>
+                <p className="mt-2 text-sm text-[var(--muted)]">
+                  {paymentsEnabled
+                    ? "Payments are enabled. Users must pay for plan upgrades and credit purchases."
+                    : "Payments are disabled. The platform is free to use with no usage limits."}
+                </p>
               </div>
-              <Link
-                href="/dashboard/admin/payments"
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--line)] bg-white/80 px-4 text-sm font-medium text-[var(--foreground)]"
-              >
-                Review payments
-              </Link>
-            </div>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <DashboardMetricCard
-                label="Approved today"
-                value={formatMoneyMinor(adminOverview.approvedRevenueTodayMinor)}
-              />
-              <DashboardMetricCard
-                label="Approved month"
-                value={formatMoneyMinor(adminOverview.approvedRevenueThisMonthMinor)}
-              />
-              <DashboardMetricCard
-                label="Approved"
-                value={formatCompactNumber(adminOverview.approvedPaymentRequests)}
-              />
-              <DashboardMetricCard
-                label="Rejected"
-                value={formatCompactNumber(adminOverview.rejectedPaymentRequests)}
-              />
+              <form action="/api/admin/settings" method="post">
+                <input
+                  name="paymentsEnabled"
+                  type="hidden"
+                  value={paymentsEnabled ? "false" : "true"}
+                />
+                <input
+                  name="returnTo"
+                  type="hidden"
+                  value="/dashboard/billing"
+                />
+                <button
+                  className={`inline-flex min-h-11 items-center justify-center rounded-full border px-5 text-sm font-medium ${
+                    paymentsEnabled
+                      ? "border-[rgba(140,63,63,0.25)] bg-[rgba(140,63,63,0.06)] text-[#8c3f3f]"
+                      : "border-[rgba(22,106,91,0.25)] bg-[rgba(22,106,91,0.07)] text-[var(--accent)]"
+                  }`}
+                  type="submit"
+                >
+                  {paymentsEnabled ? "Disable payments" : "Enable payments"}
+                </button>
+              </form>
             </div>
           </section>
 
-          <section className="panel rounded-[2rem] p-6">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
-                  Queue
-                </p>
-                <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--foreground)]">
-                  Pending reviews
-                </h2>
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              {paymentQueue.length > 0 ? (
-                paymentQueue.map((paymentRequest) => (
-                  <Link
-                    key={paymentRequest.id}
-                    href="/dashboard/admin/payments?status=pending"
-                    className="flex items-center justify-between gap-4 rounded-[1.5rem] border border-black/8 bg-white/72 px-4 py-4 hover:border-[var(--accent)]/20"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-[var(--foreground)]">
-                        {paymentRequest.requesterName}
-                      </p>
-                      <p className="mt-1 text-sm text-[var(--muted)]">
-                        {paymentRequest.workspaceName}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono text-xs text-[var(--foreground)]">
-                        {paymentRequest.amountDisplay}
-                      </p>
-                      <p className="mt-1 font-mono text-xs text-[var(--muted)]">
-                        {paymentRequest.status}
-                      </p>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <div className="rounded-[1.5rem] border border-black/8 bg-white/70 px-4 py-4 text-sm text-[var(--muted)]">
-                  No pending payments.
+          <section className="grid gap-4 xl:grid-cols-[1fr_0.95fr]">
+            <section className="panel rounded-[2rem] p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
+                    Revenue
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--foreground)]">
+                    Platform billing
+                  </h2>
                 </div>
-              )}
-            </div>
+                <Link
+                  href="/dashboard/admin/payments"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--line)] bg-white/80 px-4 text-sm font-medium text-[var(--foreground)]"
+                >
+                  Review payments
+                </Link>
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <DashboardMetricCard
+                  label="Approved today"
+                  value={formatMoneyMinor(adminOverview.approvedRevenueTodayMinor)}
+                />
+                <DashboardMetricCard
+                  label="Approved month"
+                  value={formatMoneyMinor(adminOverview.approvedRevenueThisMonthMinor)}
+                />
+                <DashboardMetricCard
+                  label="Approved"
+                  value={formatCompactNumber(adminOverview.approvedPaymentRequests)}
+                />
+                <DashboardMetricCard
+                  label="Rejected"
+                  value={formatCompactNumber(adminOverview.rejectedPaymentRequests)}
+                />
+              </div>
+            </section>
+
+            <section className="panel rounded-[2rem] p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
+                    Queue
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--foreground)]">
+                    Pending reviews
+                  </h2>
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-3">
+                {paymentQueue.length > 0 ? (
+                  paymentQueue.map((paymentRequest) => (
+                    <Link
+                      key={paymentRequest.id}
+                      href="/dashboard/admin/payments?status=pending"
+                      className="flex items-center justify-between gap-4 rounded-[1.5rem] border border-black/8 bg-white/72 px-4 py-4 hover:border-[var(--accent)]/20"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-[var(--foreground)]">
+                          {paymentRequest.requesterName}
+                        </p>
+                        <p className="mt-1 text-sm text-[var(--muted)]">
+                          {paymentRequest.workspaceName}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-mono text-xs text-[var(--foreground)]">
+                          {paymentRequest.amountDisplay}
+                        </p>
+                        <p className="mt-1 font-mono text-xs text-[var(--muted)]">
+                          {paymentRequest.status}
+                        </p>
+                      </div>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="rounded-[1.5rem] border border-black/8 bg-white/70 px-4 py-4 text-sm text-[var(--muted)]">
+                    No pending payments.
+                  </div>
+                )}
+              </div>
+            </section>
           </section>
+        </>
+      ) : !paymentsEnabled ? (
+        <section className="panel rounded-[2rem] p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
+                Free mode
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--foreground)]">
+                This platform is free to use
+              </h2>
+              <p className="mt-3 text-sm text-[var(--muted)]">
+                All features are available at no cost. No plan upgrades or credit purchases are required.
+              </p>
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                Process unlimited statements, manage projects, and export to Excel or CSV.
+              </p>
+            </div>
+            <div className="rounded-[1.4rem] border border-black/8 bg-white/70 px-4 py-3 text-right">
+              <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
+                Price
+              </p>
+              <p className="mt-2 text-sm font-medium text-[var(--accent)]">
+                Free
+              </p>
+            </div>
+          </div>
         </section>
       ) : (
         <>

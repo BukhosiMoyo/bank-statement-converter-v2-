@@ -257,6 +257,41 @@ const howToSchema = {
   })),
 };
 
+const softwareApplicationSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Bank Statement Converter",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  description:
+    "Convert bank statement PDFs into clean Excel and CSV files. Built for South African accountants, bookkeepers, and finance teams.",
+  url: "https://bankstatementconvertor.co.za",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "ZAR",
+    description: "Free Starter plan available",
+  },
+  featureList: [
+    "PDF to Excel conversion",
+    "PDF to CSV conversion",
+    "Transaction row preview and review",
+    "FNB, Standard Bank, ABSA, Capitec, Nedbank support",
+    "Project-based organization",
+    "Batch statement processing",
+  ],
+};
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Bank Statement Converter",
+  url: "https://bankstatementconvertor.co.za",
+  description:
+    "Bank statement conversion platform for South African accountants and finance teams.",
+  foundingCountry: "ZA",
+};
+
 function WorkflowIllustration() {
   return (
     <svg
@@ -499,6 +534,18 @@ export default async function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(softwareApplicationSchema),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationSchema),
+        }}
       />
 
       <section
